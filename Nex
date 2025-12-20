@@ -1,0 +1,117 @@
+local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/library"))()
+local hud = RainbowUI:CreateWindow(240, 140)
+
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Variables de Control
+local collectingGifts = false -- Estado del interruptor
+local GIFT_WAIT_TIME = 1.5 
+
+-- Variables de la Plataforma
+local platform = nil
+local platformFollowConn = nil
+local PLATFORM_SIZE = Vector3.new(8, 1, 8)
+
+-- =========================
+-- Funciones de la Plataforma
+-- =========================
+local function destroyPlatform()
+    if platformFollowConn then pcall(function() platformFollowConn:Disconnect() end) end
+    if platform then pcall(function() platform:Destroy() end) end
+    platform = nil
+end
+
+local function createPlatform()
+    if platform then return end
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local p = Instance.new("Part")
+    p.Name = "SafetyPlatform"
+    p.Size = PLATFORM_SIZE
+    p.Anchored = true
+    p.CanCollide = true
+    p.Transparency = 0.4
+    p.Color = Color3.fromRGB(255, 0, 100)
+    p.Parent = workspace
+    platform = p
+
+    platformFollowConn = RunService.Heartbeat:Connect(function()
+        if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+        local pos = LocalPlayer.Character.HumanoidRootPart.Position
+        platform.CFrame = CFrame.new(pos.X, platform.Position.Y, pos.Z)
+    end)
+end
+
+-- =========================
+-- Lógica Principal
+-- =========================
+local function collectAllGifts()
+    local root = game:GetService("Workspace"):FindFirstChild("World")
+    if root then root = root:FindFirstChild("Zones") end
+    if root then root = root:FindFirstChild("Level_WinterWonderland") end
+    if root then root = root:FindFirstChild("Gift_Collectible") end
+
+    if not root then
+        hud:Notify("Ruta no encontrada")
+        collectingGifts = false
+        return
+    end
+
+    local children = root:GetChildren()
+    if #children == 0 then
+        hud:Notify("No hay regalos")
+        collectingGifts = false
+        return
+    end
+
+    hud:Notify("Iniciando recogida...")
+    createPlatform()
+
+    for i, idFolder in ipairs(children) do
+        -- SI EL USUARIO PRESIONÓ EL BOTÓN PARA DETENER, SALIMOS DEL BUCLE
+        if not collectingGifts then break end
+
+        local mGift = idFolder:FindFirstChild("M_Gift")
+        if mGift then
+            local target = mGift:FindFirstChild("SM_Collectable")
+            if target and target:IsA("BasePart") then
+                pcall(function()
+                    LocalPlayer.Character:SetPrimaryPartCFrame(target.CFrame * CFrame.new(0, 2, 0))
+                    platform.CFrame = target.CFrame * CFrame.new(0, -3.5, 0)
+                end)
+                
+                hud:Notify("Regalo " .. i .. " de " .. #children)
+                wait(GIFT_WAIT_TIME)
+            end
+        end
+    end
+
+    -- Al terminar (por fin o por detención manual)
+    collectingGifts = false
+    destroyPlatform()
+    hud:Notify("Proceso finalizado/detenido")
+end
+
+-- =========================
+-- Botones
+-- =========================
+
+hud:AddButton("INICIAR / PARAR 🎁", function()
+    if collectingGifts then
+        -- Si ya estaba funcionando, lo apagamos
+        collectingGifts = false
+        hud:Notify("Deteniendo...")
+    else
+        -- Si estaba apagado, lo encendemos
+        collectingGifts = true
+        spawn(collectAllGifts)
+    end
+end)
+
+hud:AddButton("LIMPIAR PLATAFORMA ❌", function()
+    destroyPlatform()
+end)
