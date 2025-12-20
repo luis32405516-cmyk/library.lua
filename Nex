@@ -7,7 +7,7 @@ local LocalPlayer = Players.LocalPlayer
 
 -- Variables de Control
 local collectingGifts = false -- Estado del interruptor
-local GIFT_WAIT_TIME = 1.5 
+local GIFT_WAIT_TIME = 0 
 
 -- Variables de la Plataforma
 local platform = nil
