@@ -5,51 +5,10 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Variables de Control
-local collectingGifts = false -- Estado del interruptor
-local GIFT_WAIT_TIME = 0 
+local collectingGifts = false
+local GIFT_WAIT_TIME = 0.5 -- Puede ser muy rápido porque no te mueves
 
--- Variables de la Plataforma
-local platform = nil
-local platformFollowConn = nil
-local PLATFORM_SIZE = Vector3.new(8, 1, 8)
-
--- =========================
--- Funciones de la Plataforma
--- =========================
-local function destroyPlatform()
-    if platformFollowConn then pcall(function() platformFollowConn:Disconnect() end) end
-    if platform then pcall(function() platform:Destroy() end) end
-    platform = nil
-end
-
-local function createPlatform()
-    if platform then return end
-    local char = LocalPlayer.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-
-    local p = Instance.new("Part")
-    p.Name = "SafetyPlatform"
-    p.Size = PLATFORM_SIZE
-    p.Anchored = true
-    p.CanCollide = true
-    p.Transparency = 0.4
-    p.Color = Color3.fromRGB(255, 0, 100)
-    p.Parent = workspace
-    platform = p
-
-    platformFollowConn = RunService.Heartbeat:Connect(function()
-        if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
-        local pos = LocalPlayer.Character.HumanoidRootPart.Position
-        platform.CFrame = CFrame.new(pos.X, platform.Position.Y, pos.Z)
-    end)
-end
-
--- =========================
--- Lógica Principal
--- =========================
-local function collectAllGifts()
+local function bringGiftsToMe()
     local root = game:GetService("Workspace"):FindFirstChild("World")
     if root then root = root:FindFirstChild("Zones") end
     if root then root = root:FindFirstChild("Level_WinterWonderland") end
@@ -68,50 +27,62 @@ local function collectAllGifts()
         return
     end
 
-    hud:Notify("Iniciando recogida...")
-    createPlatform()
+    hud:Notify("Trayendo regalos hacia ti...")
+    
+    local character = LocalPlayer.Character
+    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
 
     for i, idFolder in ipairs(children) do
-        -- SI EL USUARIO PRESIONÓ EL BOTÓN PARA DETENER, SALIMOS DEL BUCLE
         if not collectingGifts then break end
 
         local mGift = idFolder:FindFirstChild("M_Gift")
         if mGift then
             local target = mGift:FindFirstChild("SM_Collectable")
+            
+            -- Verificamos que el regalo exista y sea una parte física
             if target and target:IsA("BasePart") then
+                
+                -- Guardamos la posición original por si acaso el juego la necesita
+                local oldCFrame = target.CFrame
+                
                 pcall(function()
-                    LocalPlayer.Character:SetPrimaryPartCFrame(target.CFrame * CFrame.new(0, 2, 0))
-                    platform.CFrame = target.CFrame * CFrame.new(0, -3.5, 0)
+                    -- TRAEMOS EL REGALO A TU POSICIÓN
+                    target.CanCollide = false -- Evita que el regalo te empuje
+                    target.Anchored = true    -- Lo hacemos manipulable
+                    target.CFrame = hrp.CFrame -- Lo pone exactamente donde estás tú
+                    
+                    -- Esperamos un instante para que el servidor registre el contacto
+                    task.wait(0.1)
+                    
+                    -- OPCIONAL: Si el regalo no desaparece solo, puedes devolverlo
+                    -- target.CFrame = oldCFrame 
                 end)
                 
-                hud:Notify("Regalo " .. i .. " de " .. #children)
-                wait(GIFT_WAIT_TIME)
+                hud:Notify("Objeto " .. i .. " procesado")
+                task.wait(GIFT_WAIT_TIME)
             end
         end
     end
 
-    -- Al terminar (por fin o por detención manual)
     collectingGifts = false
-    destroyPlatform()
-    hud:Notify("Proceso finalizado/detenido")
+    hud:Notify("Recogida finalizada")
 end
 
 -- =========================
 -- Botones
 -- =========================
 
-hud:AddButton("INICIAR / PARAR 🎁", function()
+hud:AddButton("TRAER REGALOS 🎁✨", function()
     if collectingGifts then
-        -- Si ya estaba funcionando, lo apagamos
         collectingGifts = false
         hud:Notify("Deteniendo...")
     else
-        -- Si estaba apagado, lo encendemos
         collectingGifts = true
-        spawn(collectAllGifts)
+        spawn(bringGiftsToMe)
     end
 end)
 
-hud:AddButton("LIMPIAR PLATAFORMA ❌", function()
-    destroyPlatform()
+hud:AddButton("NOTIFICAR ESTADO ✅", function()
+    hud:Notify("Listo para recoger")
 end)
