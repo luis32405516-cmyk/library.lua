@@ -1,84 +1,138 @@
 local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/library"))()
-local hud = RainbowUI:CreateWindow(240, 140)
+local hud = RainbowUI:CreateWindow(240, 160)
 
+local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local collectingGifts = false
-local GIFT_WAIT_TIME = 0.2 -- Puede ser super rápido
+-- Variables de Control
+local autoFlying = false
+local flySpeed = 60 -- Velocidad de movimiento (ajusta si es muy rápido)
 
-local function collectGiftsTouch()
-    local root = game:GetService("Workspace"):FindFirstChild("World")
+-- Variables de la Plataforma
+local platform = nil
+local platformConn = nil
+local PLATFORM_SIZE = Vector3.new(8, 1, 8)
+
+-- =========================
+-- Funciones de la Plataforma
+-- =========================
+local function destroyPlatform()
+    if platformConn then platformConn:Disconnect() platformConn = nil end
+    if platform then pcall(function() platform:Destroy() end) end
+    platform = nil
+end
+
+local function createPlatform()
+    if platform then return end
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    platform = Instance.new("Part")
+    platform.Name = "SafetyFloor"
+    platform.Size = PLATFORM_SIZE
+    platform.Anchored = true
+    platform.CanCollide = true
+    platform.Transparency = 0.5
+    platform.Color = Color3.fromRGB(255, 255, 0) -- Amarillo
+    platform.Parent = workspace
+end
+
+-- =========================
+-- Obtener Regalo más Cercano
+-- =========================
+local function getNearestGift()
+    local root = workspace:FindFirstChild("World")
     if root then root = root:FindFirstChild("Zones") end
     if root then root = root:FindFirstChild("Level_WinterWonderland") end
     if root then root = root:FindFirstChild("Gift_Collectible") end
-
-    if not root then
-        hud:Notify("No se encontró la ruta de regalos")
-        collectingGifts = false
-        return
-    end
-
-    local children = root:GetChildren()
-    if #children == 0 then
-        hud:Notify("No hay regalos disponibles")
-        collectingGifts = false
-        return
-    end
-
-    hud:Notify("Recolectando con Touch Interest...")
     
-    local character = LocalPlayer.Character
-    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+    local nearest = nil
+    local shortestDist = math.huge
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     
-    if not hrp then 
-        hud:Notify("No se encontró el personaje")
-        return 
-    end
-
-    for i, idFolder in ipairs(children) do
-        if not collectingGifts then break end
-
-        local mGift = idFolder:FindFirstChild("M_Gift")
-        if mGift then
-            local target = mGift:FindFirstChild("SM_Collectable")
-            
-            -- El truco está aquí: simulamos el toque
+    if root and hrp then
+        for _, idFolder in ipairs(root:GetChildren()) do
+            local mGift = idFolder:FindFirstChild("M_Gift")
+            local target = mGift and mGift:FindFirstChild("SM_Collectable")
             if target and target:IsA("BasePart") then
-                pcall(function()
-                    -- firetouchinterest(Parte1, Parte2, 0) significa "Empezar a tocar"
-                    -- firetouchinterest(Parte1, Parte2, 1) significa "Dejar de tocar"
-                    firetouchinterest(hrp, target, 0)
-                    task.wait() -- Micro espera
-                    firetouchinterest(hrp, target, 1)
-                end)
-                
-                if i % 5 == 0 then -- Notificar cada 5 para no saturar la pantalla
-                    hud:Notify("Procesados: " .. i)
+                local dist = (hrp.Position - target.Position).Magnitude
+                if dist < shortestDist then
+                    shortestDist = dist
+                    nearest = target
                 end
-                task.wait(GIFT_WAIT_TIME)
             end
         end
     end
+    return nearest
+end
 
-    collectingGifts = false
-    hud:Notify("Recogida completada ✅")
+-- =========================
+-- Lógica de Vuelo Automático
+-- =========================
+local function startAutoFly()
+    createPlatform()
+    hud:Notify("Navegación Iniciada 🚀")
+
+    while autoFlying do
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if not hrp then break end
+
+        local target = getNearestGift()
+        
+        if target then
+            -- Punto de destino (un poco arriba del regalo para no chocar)
+            local destination = target.Position + Vector3.new(0, 2, 0)
+            
+            -- Mientras estemos lejos del regalo actual, volamos hacia él
+            while autoFlying and (hrp.Position - destination).Magnitude > 3 do
+                local direction = (destination - hrp.Position).Unit
+                hrp.CFrame = hrp.CFrame + (direction * (flySpeed / 60))
+                
+                -- La plataforma sigue al personaje
+                if platform then
+                    platform.CFrame = hrp.CFrame * UDim2.fromOffset(0, -3.5) -- Corrección de CFrame
+                    platform.CFrame = hrp.CFrame * CFrame.new(0, -3.5, 0)
+                end
+                RunService.Heartbeat:Wait()
+            end
+            
+            -- Espera pequeña para asegurar que el regalo desaparezca
+            task.wait(0.5)
+        else
+            hud:Notify("No hay más regalos cercanos")
+            break
+        end
+        task.wait()
+    end
+
+    autoFlying = false
+    destroyPlatform()
+    hud:Notify("Auto-Vuelo Detenido")
 end
 
 -- =========================
 -- Botones
 -- =========================
 
-hud:AddButton("RECOGER (MODO DIOS) 🔥", function()
-    if collectingGifts then
-        collectingGifts = false
-        hud:Notify("Cancelando...")
+hud:AddButton("AUTO-VUELO A OBJETOS 🎁✈️", function()
+    if autoFlying then
+        autoFlying = false
     else
-        collectingGifts = true
-        task.spawn(collectGiftsTouch)
+        autoFlying = true
+        task.spawn(startAutoFly)
     end
 end)
 
-hud:AddButton("NOTIFICAR ESTADO ✅", function()
-    hud:Notify("Script Listo")
+hud:AddButton("AJUSTAR VELOCIDAD ⚡", function()
+    if flySpeed == 60 then flySpeed = 100 hud:Notify("Velocidad: Rápida")
+    elseif flySpeed == 100 then flySpeed = 30 hud:Notify("Velocidad: Lenta")
+    else flySpeed = 60 hud:Notify("Velocidad: Normal") end
+end)
+
+hud:AddButton("DETENER Y LIMPIAR ❌", function()
+    autoFlying = false
+    destroyPlatform()
 end)
