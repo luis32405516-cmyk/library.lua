@@ -1,0 +1,141 @@
+local RainbowUI = {}
+RainbowUI.__index = RainbowUI
+
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local function rainbowColor(speed, sat, val)
+    sat, val = sat or 1, val or 1
+    return Color3.fromHSV((tick() * speed) % 1, sat, val)
+end
+
+function RainbowUI:CreateWindow(width, height)
+    local api = setmetatable({ _folders = {} }, RainbowUI)
+    width, height = width or 230, height or 120
+    local sg = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer.PlayerGui)
+    sg.Name = "RainbowUI"
+    sg.ResetOnSpawn = false
+    
+    local frame = Instance.new("Frame", sg)
+    frame.Name = "MainFrame"
+    frame.Size = UDim2.fromOffset(width, 26)
+    frame.Position = UDim2.fromOffset(160, 180)
+    frame.BackgroundColor3 = Color3.fromRGB(12, 13, 21)
+    frame.BorderSizePixel = 0
+    
+    local bar = Instance.new("Frame", frame)
+    bar.Size = UDim2.new(1, 0, 0, 26)
+    bar.BackgroundColor3 = Color3.fromRGB(20, 20, 32)
+    bar.BorderSizePixel = 0
+    
+    local title = Instance.new("TextLabel", bar)
+    title.Size = UDim2.new(1, -40, 1, 0)
+    title.Position = UDim2.fromOffset(10, 0)
+    title.Text = "SCRIPT😈LUIS"
+    title.Font = Enum.Font.GothamBold
+    title.TextColor3 = Color3.new(1,1,1)
+    title.TextSize = 16
+    title.BackgroundTransparency = 1
+    title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local scroll = Instance.new("ScrollingFrame", frame)
+    scroll.Name = "Content"
+    scroll.Size = UDim2.new(1, -10, 0, height - 30)
+    scroll.Position = UDim2.fromOffset(5, 30)
+    scroll.BackgroundTransparency = 1
+    scroll.ScrollBarThickness = 2
+    scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    scroll.CanvasSize = UDim2.new(0,0,0,0)
+    scroll.Visible = false
+
+    local list = Instance.new("UIListLayout", scroll)
+    list.Padding = UDim.new(0, 5)
+    list.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local collapseBtn = Instance.new("TextButton", bar)
+    collapseBtn.Text = "—"
+    collapseBtn.Size = UDim2.fromOffset(25, 25)
+    collapseBtn.Position = UDim2.new(1, -30, 0, 0)
+    collapseBtn.BackgroundTransparency = 1
+    collapseBtn.TextColor3 = Color3.new(1,0,0)
+
+    collapseBtn.MouseButton1Click:Connect(function()
+        scroll.Visible = not scroll.Visible
+        frame.Size = scroll.Visible and UDim2.fromOffset(width, height) or UDim2.fromOffset(width, 26)
+        collapseBtn.Text = scroll.Visible and "v" or "—"
+    end)
+
+    api._scroll = scroll
+    api._sg = sg
+    return api
+end
+
+function RainbowUI:AddFolder(name)
+    local folderApi = { _open = false }
+    local btn = Instance.new("TextButton", self._scroll)
+    btn.Text = "> " .. name
+    btn.Size = UDim2.new(1, 0, 0, 25)
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Font = Enum.Font.GothamBold
+    
+    local container = Instance.new("Frame", self._scroll)
+    container.Size = UDim2.new(1, 0, 0, 0)
+    container.BackgroundTransparency = 1
+    container.Visible = false
+    container.AutomaticSize = Enum.AutomaticSize.Y
+    
+    local clist = Instance.new("UIListLayout", container)
+    clist.Padding = UDim.new(0, 3)
+
+    btn.MouseButton1Click:Connect(function()
+        folderApi._open = not folderApi._open
+        container.Visible = folderApi._open
+        btn.Text = (folderApi._open and "v " or "> ") .. name
+    end)
+
+    function folderApi:AddButton(text, cb)
+        local b = Instance.new("TextButton", container)
+        b.Text = text
+        b.Size = UDim2.new(1, 0, 0, 22)
+        b.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+        b.TextColor3 = Color3.new(0.8, 0.8, 1)
+        b.MouseButton1Click:Connect(cb)
+        return b
+    end
+
+    function folderApi:AddRowButtons(btn1Data, btn2Data)
+        local row = Instance.new("Frame", container)
+        row.Size = UDim2.new(1, 0, 0, 25)
+        row.BackgroundTransparency = 1
+        local b1 = Instance.new("TextButton", row)
+        b1.Size = UDim2.new(0.5, -2, 1, 0)
+        b1.Text = btn1Data.text
+        b1.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+        b1.TextColor3 = Color3.new(1,1,1)
+        b1.MouseButton1Click:Connect(btn1Data.callback)
+        local b2 = Instance.new("TextButton", row)
+        b2.Size = UDim2.new(0.5, -2, 1, 0)
+        b2.Position = UDim2.new(0.5, 2, 0, 0)
+        b2.Text = btn2Data.text
+        b2.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+        b2.TextColor3 = Color3.new(1,1,1)
+        b2.MouseButton1Click:Connect(btn2Data.callback)
+    end
+    return folderApi
+end
+
+function RainbowUI:AddButton(text, cb)
+    local b = Instance.new("TextButton", self._scroll)
+    b.Text = text
+    b.Size = UDim2.new(1, 0, 0, 25)
+    b.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+    b.TextColor3 = Color3.new(1,1,1)
+    b.MouseButton1Click:Connect(cb)
+end
+
+function RainbowUI:Notify(t)
+    print("Notification: " .. t) -- Versión simplificada para limpieza
+end
+
+return RainbowUI
