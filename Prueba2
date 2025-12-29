@@ -116,6 +116,7 @@ function RainbowUI:AddFolder(name)
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.GothamBold
     btn.ZIndex = 3
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6) -- Redondeo aplicado
 
     local container = Instance.new("Frame", self._scroll)
     container.Size = UDim2.new(1, 0, 0, 0)
@@ -139,6 +140,7 @@ function RainbowUI:AddFolder(name)
         b.TextColor3 = Color3.new(0.9, 0.9, 1)
         b.Font = Enum.Font.GothamSemibold
         b.ZIndex = 4
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6) -- Redondeo aplicado
         b.MouseButton1Click:Connect(cb)
     end
 
@@ -155,6 +157,7 @@ function RainbowUI:AddFolder(name)
             b.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
             b.TextColor3 = Color3.new(1, 1, 1)
             b.ZIndex = 5
+            Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6) -- Redondeo aplicado
             b.MouseButton1Click:Connect(d.callback)
         end
         createB(b1d, UDim2.new(0, 0, 0, 0))
@@ -171,6 +174,7 @@ function RainbowUI:AddButton(text, cb)
     b.TextColor3 = Color3.new(1, 1, 1)
     b.Font = Enum.Font.GothamBold
     b.ZIndex = 3
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6) -- Redondeo aplicado
     b.MouseButton1Click:Connect(cb)
 end
 
