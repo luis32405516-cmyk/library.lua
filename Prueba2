@@ -5,41 +5,39 @@ function RainbowUI:CreateWindow(width, height)
     sg.Name = "RainbowUI"
 
     local main = Instance.new("Frame", sg)
-    main.Size = UDim2.new(0, width or 230, 0, height or 220)
-    main.Position = UDim2.new(0.5, -width/2, 0.5, -height/2)
+    main.Size = UDim2.new(0, width or 200, 0, height or 250)
+    main.Position = UDim2.new(0.5, -100, 0.5, -125)
     main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    main.Active, main.Draggable = true, true
-    Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
+    main.Active = true
+    main.Draggable = true
 
     local line = Instance.new("Frame", main)
-    line.Size = UDim2.new(1, 0, 0, 3)
+    line.Size = UDim2.new(1, 0, 0, 2)
     line.BorderSizePixel = 0
-    Instance.new("UICorner", line).CornerRadius = UDim.new(0, 10)
 
     local title = Instance.new("TextLabel", main)
-    title.Size = UDim2.new(1, 0, 0, 25)
+    title.Size = UDim2.new(1, 0, 0, 20)
     title.Position = UDim2.new(0, 0, 0, 5)
     title.BackgroundTransparency = 1
     title.Text = "SCRIPT 😈 LUIS"
     title.TextColor3 = Color3.new(1, 1, 1)
     title.Font = Enum.Font.SourceSansBold
-    title.TextSize = 16
+    title.TextSize = 14
 
     local container = Instance.new("ScrollingFrame", main)
-    container.Size = UDim2.new(1, -10, 1, -45)
-    container.Position = UDim2.new(0, 5, 0, 35)
-    container.BackgroundTransparency, container.BorderSizePixel = 1, 0
+    container.Size = UDim2.new(1, -10, 1, -35)
+    container.Position = UDim2.new(0, 5, 0, 30)
+    container.BackgroundTransparency = 1
     container.CanvasSize = UDim2.new(0, 0, 0, 0)
     container.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    container.ScrollBarThickness = 3
+    container.ScrollBarThickness = 4
 
     local layout = Instance.new("UIListLayout", container)
     layout.Padding = UDim.new(0, 5)
     layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
     game:GetService("RunService").RenderStepped:Connect(function()
-        local c = Color3.fromHSV((tick() * 0.5) % 1, 1, 1)
-        line.BackgroundColor3, title.TextColor3 = c, c
+        line.BackgroundColor3 = Color3.fromHSV((tick() * 0.5) % 1, 1, 1)
     end)
 
     local window = {}
@@ -49,61 +47,79 @@ function RainbowUI:CreateWindow(width, height)
         btn.Size = UDim2.new(0.9, 0, 0, 30)
         btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
         btn.TextColor3 = Color3.new(1, 1, 1)
-        btn.Text, btn.Font, btn.TextSize = text, Enum.Font.SourceSansBold, 14
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+        btn.Text = text
+        btn.Font = Enum.Font.SourceSans
+        btn.TextSize = 14
         btn.MouseButton1Click:Connect(callback)
     end
 
     function window:AddFolder(name)
         local folderFrame = Instance.new("Frame", container)
-        folderFrame.Size, folderFrame.BackgroundColor3, folderFrame.ClipsDescendants = UDim2.new(0.9, 0, 0, 30), Color3.fromRGB(30, 30, 30), true
-        Instance.new("UICorner", folderFrame).CornerRadius = UDim.new(0, 8)
+        folderFrame.Size = UDim2.new(0.9, 0, 0, 30)
+        folderFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        folderFrame.ClipsDescendants = true
 
         local fLabel = Instance.new("TextButton", folderFrame)
-        fLabel.Size, fLabel.BackgroundTransparency, fLabel.TextColor3 = UDim2.new(1, 0, 0, 30), 1, Color3.new(1, 1, 1)
-        fLabel.Text, fLabel.TextXAlignment, fLabel.Font = "  ▼ " .. name, Enum.TextXAlignment.Left, Enum.Font.SourceSansBold
+        fLabel.Size = UDim2.new(1, 0, 0, 30)
+        fLabel.BackgroundTransparency = 1
+        fLabel.Text = "  + " .. name
+        fLabel.TextColor3 = Color3.new(1, 1, 1)
+        fLabel.TextXAlignment = Enum.TextXAlignment.Left
+        fLabel.Font = Enum.Font.SourceSansBold
 
         local fContent = Instance.new("Frame", folderFrame)
-        fContent.Size, fContent.Position, fContent.BackgroundTransparency = UDim2.new(1, 0, 0, 0), UDim2.new(0, 0, 0, 30), 1
+        fContent.Size = UDim2.new(1, 0, 0, 0)
+        fContent.Position = UDim2.new(0, 0, 0, 30)
+        fContent.BackgroundTransparency = 1
         local fLayout = Instance.new("UIListLayout", fContent)
-        fLayout.Padding, fLayout.HorizontalAlignment = UDim.new(0, 5), Enum.HorizontalAlignment.Center
+        fLayout.Padding = UDim.new(0, 5)
 
         local open = false
         fLabel.MouseButton1Click:Connect(function()
             open = not open
             folderFrame.Size = open and UDim2.new(0.9, 0, 0, fLayout.AbsoluteContentSize.Y + 35) or UDim2.new(0.9, 0, 0, 30)
-            fLabel.Text = open and "  ▲ " .. name or "  ▼ " .. name
+            fLabel.Text = open and "  - " .. name or "  + " .. name
         end)
 
         local folder = {}
         function folder:AddButton(text, callback)
             local b = Instance.new("TextButton", fContent)
-            b.Size, b.BackgroundColor3, b.TextColor3, b.Text = UDim2.new(0.95, 0, 0, 25), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), text
-            Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+            b.Size = UDim2.new(1, 0, 0, 25)
+            b.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            b.TextColor3 = Color3.new(1, 1, 1)
+            b.Text = text
             b.MouseButton1Click:Connect(callback)
         end
         
         function folder:AddRowButtons(b1, b2)
             local row = Instance.new("Frame", fContent)
-            row.Size, row.BackgroundTransparency = UDim2.new(0.95, 0, 0, 25), 1
+            row.Size = UDim2.new(1, 0, 0, 25)
+            row.BackgroundTransparency = 1
             local rLayout = Instance.new("UIListLayout", row)
-            rLayout.FillDirection, rLayout.Padding, rLayout.HorizontalAlignment = Enum.FillDirection.Horizontal, UDim.new(0, 5), Enum.HorizontalAlignment.Center
+            rLayout.FillDirection = Enum.FillDirection.Horizontal
+            rLayout.Padding = UDim.new(0, 5)
 
             local function createRowBtn(data)
                 local b = Instance.new("TextButton", row)
-                b.Size, b.BackgroundColor3, b.TextColor3, b.Text = UDim2.new(0.5, -3, 1, 0), Color3.fromRGB(45, 45, 45), Color3.new(1, 1, 1), data.text
-                Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+                b.Size = UDim2.new(0.5, -2, 1, 0)
+                b.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                b.TextColor3 = Color3.new(1, 1, 1)
+                b.Text = data.text
                 b.MouseButton1Click:Connect(data.callback)
             end
-            createRowBtn(b1) createRowBtn(b2)
+            createRowBtn(b1)
+            createRowBtn(b2)
         end
         return folder
     end
 
     function window:Notify(msg, dur)
         local n = Instance.new("TextLabel", sg)
-        n.Size, n.Position, n.BackgroundColor3, n.TextColor3, n.Text = UDim2.new(0, 180, 0, 30), UDim2.new(0.5, -90, 0.1, 0), Color3.fromRGB(30, 30, 30), Color3.new(1, 1, 1), msg
-        Instance.new("UICorner", n).CornerRadius = UDim.new(0, 8)
+        n.Size = UDim2.new(0, 150, 0, 30)
+        n.Position = UDim2.new(0.5, -75, 0.1, 0)
+        n.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        n.TextColor3 = Color3.new(1, 1, 1)
+        n.Text = msg
         task.delay(dur or 2, function() n:Destroy() end)
     end
 
