@@ -1,11 +1,10 @@
-local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/library"))()
-local hud = RainbowUI:CreateWindow(230, 240)
+local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2"))()
+local hud = RainbowUI:CreateWindow(230, 200)
 
-local RunService = game:GetService("RunService")
 local LocalPlayer = game:GetService("Players").LocalPlayer
+local RunService = game:GetService("RunService")
 
-local teleporting, stickerTeleporting = false, false
-local currentStickerIndex = 1
+local currentIdx, teleporting = 1, false
 local platform, platformConn = nil, nil
 
 local stickerPaths = {
@@ -26,7 +25,7 @@ local function createPlatform()
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
     platform = Instance.new("Part", workspace)
-    platform.Size, platform.Anchored, platform.Transparency, platform.Color = Vector3.new(6, 1, 6), true, 0.35, Color3.fromRGB(255, 0, 0)
+    platform.Size, platform.Anchored, platform.Transparency, platform.Color = Vector3.new(6, 1, 6), true, 0.35, Color3.new(1, 0, 0)
     platformConn = RunService.Heartbeat:Connect(function()
         local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if root and platform then platform.CFrame = CFrame.new(root.Position.X, platform.Position.Y, root.Position.Z) end
@@ -41,71 +40,48 @@ local function teleportTo(target)
     end
 end
 
-local function tpToSticker(index)
-    local path = stickerPaths[index]
+local function tpToSticker(idx)
     local node = workspace
-    for seg in path:gmatch("[^%.]+") do node = node and node:FindFirstChild(seg) end
+    for seg in stickerPaths[idx]:gmatch("[^%.]+") do node = node and node:FindFirstChild(seg) end
     local touch = node and node:FindFirstChild("Touch")
     if touch then createPlatform() teleportTo(touch) end
 end
 
--- SECCIÓN OBJETOS
-hud:AddButton("--- OBJETOS 🗺️ ---", nil)
-hud:AddButton("BUSCAR 🔎", function()
-    if teleporting then teleporting = false return end
-    teleporting = true
-    task.spawn(function()
-        createPlatform()
-        while teleporting do
-            local target = workspace:FindFirstChild("Pickups") and workspace.Pickups:FindFirstChild("Default")
-            if target then
-                local part = target:IsA("Model") and (target.PrimaryPart or target:FindFirstChildWhichIsA("BasePart")) or target
-                teleportTo(part)
+-- CARPETA OBJETOS
+local fObj = hud:AddFolder("OBJETOS 🗺️")
+fObj:AddButton("BUSCAR 🔎", function()
+    teleporting = not teleporting
+    if teleporting then
+        task.spawn(function()
+            createPlatform()
+            while teleporting do
+                local t = workspace:FindFirstChild("Pickups") and workspace.Pickups:FindFirstChild("Default")
+                if t then teleportTo(t:IsA("Model") and (t.PrimaryPart or t:FindFirstChildWhichIsA("BasePart")) or t) end
+                task.wait(0.1)
             end
-            task.wait(0.1)
-        end
-        destroyPlatform()
-    end)
+            destroyPlatform()
+        end)
+    end
 end)
 
--- SECCIÓN CHECKPOINTS
-hud:AddButton("--- CHECKPOINTS 🔙🔜 ---", nil)
-hud:AddButton("CICLO STICKERS 🔁", function()
-    if stickerTeleporting then stickerTeleporting = false return end
-    stickerTeleporting = true
-    task.spawn(function()
-        createPlatform()
-        for i = 1, #stickerPaths do
-            if not stickerTeleporting then break end
-            tpToSticker(i)
-            task.wait(2.0)
-        end
-        stickerTeleporting = false
-        destroyPlatform()
-    end)
-end)
+-- CARPETA CHECKPOINTS
+local fCheck = hud:AddFolder("CHECKPOINTS 🔙🔜")
+fCheck:AddRowButtons(
+    {text = "◀️", callback = function() 
+        currentIdx = currentIdx - 1
+        if currentIdx < 1 then currentIdx = #stickerPaths end
+        tpToSticker(currentIdx)
+    end},
+    {text = "▶️", callback = function() 
+        currentIdx = currentIdx + 1
+        if currentIdx > #stickerPaths then currentIdx = 1 end
+        tpToSticker(currentIdx)
+    end}
+)
 
-hud:AddButton("ANTERIOR ◀️", function()
-    currentStickerIndex = currentStickerIndex - 1
-    if currentStickerIndex < 1 then currentStickerIndex = #stickerPaths end
-    tpToSticker(currentStickerIndex)
-    hud:Notify("Checkpoint: " .. currentStickerIndex)
-end)
-
-hud:AddButton("SIGUIENTE ▶️", function()
-    currentStickerIndex = currentStickerIndex + 1
-    if currentStickerIndex > #stickerPaths then currentStickerIndex = 1 end
-    tpToSticker(currentStickerIndex)
-    hud:Notify("Checkpoint: " .. currentStickerIndex)
-end)
-
--- ACCIONES EXTRA
-hud:AddButton("--- EXTRAS ---", nil)
-hud:AddButton("PLATAFORMA 🟥", function()
-    if not platform then createPlatform() else destroyPlatform() end
-end)
-
+-- BOTONES GENERALES
+hud:AddButton("PLATAFORMA 🟥", function() if platform then destroyPlatform() else createPlatform() end end)
 hud:AddButton("GANAR 🏁", function()
-    local target = workspace:FindFirstChild("Utility") and workspace.Utility.Teleporters.Portal_to_Wc.Collision
-    if target then createPlatform() teleportTo(target) end
+    local t = workspace:FindFirstChild("Utility") and workspace.Utility.Teleporters.Portal_to_Wc.Collision
+    if t then createPlatform() teleportTo(t) end
 end)
