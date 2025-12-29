@@ -1,9 +1,8 @@
 local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2"))()
-local hud = RainbowUI:CreateWindow(230, 260)
+local hud = RainbowUI:CreateWindow(230, 205)
 
 local LocalPlayer = game:GetService("Players").LocalPlayer
 local RunService = game:GetService("RunService")
-local StarterGui = game:GetService("StarterGui")
 
 local currentIdx, teleporting = 1, false
 local platform, platformConn = nil, nil
@@ -15,7 +14,6 @@ local stickerPaths = {
     "ActiveStickers.wo09", "ActiveStickers.wo10"
 }
 
--- Colores y Plataforma
 local function getRainbowColor(speed) return Color3.fromHSV((tick() * (speed or 0.5)) % 1, 1, 1) end
 
 local function destroyPlatform()
@@ -39,7 +37,6 @@ local function createPlatform()
     end)
 end
 
--- Teletransporte
 local function teleportTo(target)
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if hrp and target then
@@ -55,7 +52,6 @@ local function tpToSticker(idx)
     if touch then createPlatform() teleportTo(touch) hud:Notify("STICKER: "..idx, 2) end
 end
 
--- CARPETAS
 local fObj = hud:AddFolder("OBJETOS 🗺️")
 fObj:AddButton("BUSCAR 🔎", function()
     teleporting = not teleporting
@@ -79,26 +75,8 @@ fCheck:AddRowButtons(
     {text = "▶️", callback = function() currentIdx = math.min(#stickerPaths, currentIdx + 1) tpToSticker(currentIdx) end}
 )
 
--- BOTONES
 hud:AddButton("PLATAFORMA 🌈", function() if platform then destroyPlatform() else createPlatform() end end)
 hud:AddButton("GANAR 🏁", function()
     local t = workspace:FindFirstChild("Utility") and workspace.Utility.Teleporters.Portal_to_Wc.Collision
     if t then createPlatform() teleportTo(t) hud:Notify("Meta", 2) end
-end)
-
--- BOTÓN DE PRUEBA DE UBICACIÓN (La que tú pasaste)
-hud:AddButton("PROBAR TABLA 📊", function()
-    pcall(function()
-        -- Intentamos la ruta que tú encontraste
-        local target = LocalPlayer.PlayerGui.ProximityPrompts.Default.PromptFrame.InputFrame.Frame.ProgressBar
-        target.Visible = not target.Visible
-        hud:Notify("Estado cambiado", 1)
-    end)
-    
-    -- También intentamos abrir el UGC por si acaso
-    for _, v in ipairs(LocalPlayer.PlayerGui:GetChildren()) do
-        if v.Name:lower():find("ugc") or v.Name:lower():find("leaderboard") then
-            if v:IsA("ScreenGui") then v.Enabled = not v.Enabled end
-        end
-    end
 end)
