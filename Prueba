@@ -1,5 +1,5 @@
 local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2"))()
-local hud = RainbowUI:CreateWindow(230, 200)
+local hud = RainbowUI:CreateWindow(230, 220)
 
 local LocalPlayer = game:GetService("Players").LocalPlayer
 local RunService = game:GetService("RunService")
@@ -14,6 +14,11 @@ local stickerPaths = {
     "ActiveStickers.wo09", "ActiveStickers.wo10"
 }
 
+-- Función para el color Rainbow
+local function getRainbowColor(speed)
+    return Color3.fromHSV((tick() * (speed or 0.5)) % 1, 1, 1)
+end
+
 local function destroyPlatform()
     if platformConn then platformConn:Disconnect() end
     if platform then pcall(function() platform:Destroy() end) end
@@ -24,11 +29,21 @@ local function createPlatform()
     if platform then return end
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
+    
     platform = Instance.new("Part", workspace)
-    platform.Size, platform.Anchored, platform.Transparency, platform.Color = Vector3.new(6, 1, 6), true, 0.35, Color3.new(1, 0, 0)
+    platform.Size = Vector3.new(6, 1, 6)
+    platform.Anchored = true
+    platform.Transparency = 0.35
+    platform.CanCollide = true -- Para que no te caigas
+    
     platformConn = RunService.Heartbeat:Connect(function()
         local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if root and platform then platform.CFrame = CFrame.new(root.Position.X, platform.Position.Y, root.Position.Z) end
+        if root and platform then 
+            -- Seguir al jugador
+            platform.CFrame = CFrame.new(root.Position.X, platform.Position.Y, root.Position.Z)
+            -- Cambiar color a Rainbow
+            platform.Color = getRainbowColor(0.3) 
+        end
     end)
 end
 
@@ -44,7 +59,11 @@ local function tpToSticker(idx)
     local node = workspace
     for seg in stickerPaths[idx]:gmatch("[^%.]+") do node = node and node:FindFirstChild(seg) end
     local touch = node and node:FindFirstChild("Touch")
-    if touch then createPlatform() teleportTo(touch) end
+    if touch then 
+        createPlatform() 
+        teleportTo(touch)
+        hud:Notify("STICKER: " .. idx, 2)
+    end
 end
 
 -- CARPETA OBJETOS
@@ -52,15 +71,21 @@ local fObj = hud:AddFolder("OBJETOS 🗺️")
 fObj:AddButton("BUSCAR 🔎", function()
     teleporting = not teleporting
     if teleporting then
+        hud:Notify("Buscando Objetos...", 2)
         task.spawn(function()
             createPlatform()
             while teleporting do
                 local t = workspace:FindFirstChild("Pickups") and workspace.Pickups:FindFirstChild("Default")
-                if t then teleportTo(t:IsA("Model") and (t.PrimaryPart or t:FindFirstChildWhichIsA("BasePart")) or t) end
+                if t then 
+                    local part = t:IsA("Model") and (t.PrimaryPart or t:FindFirstChildWhichIsA("BasePart")) or t
+                    teleportTo(part) 
+                end
                 task.wait(0.1)
             end
             destroyPlatform()
         end)
+    else
+        hud:Notify("Búsqueda Detenida", 2)
     end
 end)
 
@@ -80,8 +105,15 @@ fCheck:AddRowButtons(
 )
 
 -- BOTONES GENERALES
-hud:AddButton("PLATAFORMA 🟥", function() if platform then destroyPlatform() else createPlatform() end end)
+hud:AddButton("PLATAFORMA 🌈", function() 
+    if platform then destroyPlatform() else createPlatform() end 
+end)
+
 hud:AddButton("GANAR 🏁", function()
     local t = workspace:FindFirstChild("Utility") and workspace.Utility.Teleporters.Portal_to_Wc.Collision
-    if t then createPlatform() teleportTo(t) end
+    if t then 
+        createPlatform() 
+        teleportTo(t) 
+        hud:Notify("Teletransportado a Meta", 2)
+    end
 end)
