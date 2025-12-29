@@ -15,7 +15,6 @@ local stickerPaths = {
     "ActiveStickers.wo09", "ActiveStickers.wo10"
 }
 
--- Función para color Rainbow
 local function getRainbowColor(speed)
     return Color3.fromHSV((tick() * (speed or 0.5)) % 1, 1, 1)
 end
@@ -30,13 +29,8 @@ local function createPlatform()
     if platform then return end
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
-    
     platform = Instance.new("Part", workspace)
-    platform.Size = Vector3.new(6, 1, 6)
-    platform.Anchored = true
-    platform.Transparency = 0.35
-    platform.CanCollide = true
-    
+    platform.Size, platform.Anchored, platform.Transparency, platform.CanCollide = Vector3.new(6, 1, 6), true, 0.35, true
     platformConn = RunService.Heartbeat:Connect(function()
         local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if root and platform then 
@@ -58,14 +52,10 @@ local function tpToSticker(idx)
     local node = workspace
     for seg in stickerPaths[idx]:gmatch("[^%.]+") do node = node and node:FindFirstChild(seg) end
     local touch = node and node:FindFirstChild("Touch")
-    if touch then 
-        createPlatform() 
-        teleportTo(touch)
-        hud:Notify("STICKER: " .. idx, 2)
-    end
+    if touch then createPlatform() teleportTo(touch) hud:Notify("STICKER: "..idx, 2) end
 end
 
--- CARPETA OBJETOS
+-- CARPETAS
 local fObj = hud:AddFolder("OBJETOS 🗺️")
 fObj:AddButton("BUSCAR 🔎", function()
     teleporting = not teleporting
@@ -75,58 +65,50 @@ fObj:AddButton("BUSCAR 🔎", function()
             createPlatform()
             while teleporting do
                 local t = workspace:FindFirstChild("Pickups") and workspace.Pickups:FindFirstChild("Default")
-                if t then 
-                    local part = t:IsA("Model") and (t.PrimaryPart or t:FindFirstChildWhichIsA("BasePart")) or t
-                    teleportTo(part) 
-                end
+                if t then teleportTo(t:IsA("Model") and (t.PrimaryPart or t:FindFirstChildWhichIsA("BasePart")) or t) end
                 task.wait(0.1)
             end
             destroyPlatform()
         end)
-    else
-        hud:Notify("Detenido", 2)
-    end
+    else hud:Notify("Detenido", 2) end
 end)
 
--- CARPETA CHECKPOINTS
 local fCheck = hud:AddFolder("CHECKPOINTS 🔙🔜")
 fCheck:AddRowButtons(
-    {text = "◀️", callback = function() 
-        currentIdx = currentIdx - 1
-        if currentIdx < 1 then currentIdx = #stickerPaths end
-        tpToSticker(currentIdx)
-    end},
-    {text = "▶️", callback = function() 
-        currentIdx = currentIdx + 1
-        if currentIdx > #stickerPaths then currentIdx = 1 end
-        tpToSticker(currentIdx)
-    end}
+    {text = "◀️", callback = function() currentIdx = math.max(1, currentIdx - 1) tpToSticker(currentIdx) end},
+    {text = "▶️", callback = function() currentIdx = math.min(#stickerPaths, currentIdx + 1) tpToSticker(currentIdx) end}
 )
 
--- BOTONES GENERALES
-hud:AddButton("PLATAFORMA 🌈", function() 
-    if platform then destroyPlatform() else createPlatform() end 
-end)
-
+-- BOTONES
+hud:AddButton("PLATAFORMA 🌈", function() if platform then destroyPlatform() else createPlatform() end end)
 hud:AddButton("GANAR 🏁", function()
     local t = workspace:FindFirstChild("Utility") and workspace.Utility.Teleporters.Portal_to_Wc.Collision
     if t then createPlatform() teleportTo(t) hud:Notify("Meta", 2) end
 end)
 
--- BOTÓN DE TABLA (Oficial + Personalizada)
-hud:AddButton("TABLA 📊", function()
-    -- Alternar Leaderboard de Roblox
-    local state = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.PlayerList)
-    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, not state)
-    
-    -- Buscar tabla personalizada por el nombre TooltipPoints o similares
+-- BOTÓN DE TABLA INTELIGENTE
+hud:AddButton("TABLA UGC 📊", function()
     local pGui = LocalPlayer:FindFirstChild("PlayerGui")
-    if pGui then
-        local custom = pGui:FindFirstChild("TooltipPoints") or pGui:FindFirstChild("PointsGui") or pGui:FindFirstChild("Leaderboard")
-        if custom then
-            if custom:IsA("ScreenGui") then custom.Enabled = not state
-            elseif custom:IsA("Frame") then custom.Visible = not state end
+    local found = false
+    
+    -- Escaneo de interfaces personalizadas (como la de la foto)
+    for _, gui in ipairs(pGui:GetChildren()) do
+        if gui.Name:lower():find("ugc") or gui.Name:lower():find("leaderboard") or gui.Name:lower():find("point") then
+            local mainFrame = gui:FindFirstChildWhichIsA("Frame") or gui
+            if gui:IsA("ScreenGui") then
+                gui.Enabled = not gui.Enabled
+                found = true
+            elseif mainFrame:IsA("Frame") then
+                mainFrame.Visible = not mainFrame.Visible
+                found = true
+            end
         end
+    end
+    
+    -- Si no hay personalizada, usa la de Roblox
+    if not found then
+        local s = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.PlayerList)
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, not s)
     end
     hud:Notify("Tabla Alternada", 1)
 end)
