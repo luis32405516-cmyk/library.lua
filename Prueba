@@ -52,11 +52,10 @@ local function tpToSticker(index)
     if touch then 
         createPlatform()
         teleportTo(touch) 
-        hud:Notify("Teleport: " .. index)
     end
 end
 
--- CARPETA OBJETOS
+-- SECCIÓN: OBJETOS
 local fObjetos = hud:AddFolder("OBJETOS 🗺️")
 fObjetos:AddButton("BUSCAR 🔎", function()
     if teleporting then teleporting = false return end
@@ -67,8 +66,8 @@ fObjetos:AddButton("BUSCAR 🔎", function()
             local pickups = workspace:FindFirstChild("Pickups")
             local target = pickups and pickups:FindFirstChild("Default")
             if target then
-                if target:IsA("Model") then teleportTo(target.PrimaryPart or target:FindFirstChildWhichIsA("BasePart"))
-                else teleportTo(target) end
+                local part = target:IsA("Model") and (target.PrimaryPart or target:FindFirstChildWhichIsA("BasePart")) or target
+                teleportTo(part)
             end
             task.wait(0.1)
         end
@@ -76,7 +75,7 @@ fObjetos:AddButton("BUSCAR 🔎", function()
     end)
 end)
 
--- CARPETA CHECKPOINTS
+-- SECCIÓN: CHECKPOINTS
 local fCheck = hud:AddFolder("CHECKPOINTS 🔙🔜")
 fCheck:AddButton("CICLO STICKERS 🔁", function()
     if stickerTeleporting then stickerTeleporting = false return end
@@ -105,7 +104,7 @@ fCheck:AddButton("SIGUIENTE ▶️", function()
     tpToSticker(currentStickerIndex)
 end)
 
--- BOTONES PRINCIPALES
+-- BOTONES FUERA DE CARPETAS PARA MAYOR SEGURIDAD
 hud:AddButton("PLATAFORMA 🟥", function()
     if not platform then createPlatform() else destroyPlatform() end
 end)
