@@ -1,8 +1,9 @@
 local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2"))()
-local hud = RainbowUI:CreateWindow(230, 220)
+local hud = RainbowUI:CreateWindow(230, 240) -- Subí un poco el alto para que quepa el nuevo botón
 
 local LocalPlayer = game:GetService("Players").LocalPlayer
 local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
 
 local currentIdx, teleporting = 1, false
 local platform, platformConn = nil, nil
@@ -14,7 +15,6 @@ local stickerPaths = {
     "ActiveStickers.wo09", "ActiveStickers.wo10"
 }
 
--- Función para el color Rainbow
 local function getRainbowColor(speed)
     return Color3.fromHSV((tick() * (speed or 0.5)) % 1, 1, 1)
 end
@@ -34,14 +34,12 @@ local function createPlatform()
     platform.Size = Vector3.new(6, 1, 6)
     platform.Anchored = true
     platform.Transparency = 0.35
-    platform.CanCollide = true -- Para que no te caigas
+    platform.CanCollide = true
     
     platformConn = RunService.Heartbeat:Connect(function()
         local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if root and platform then 
-            -- Seguir al jugador
             platform.CFrame = CFrame.new(root.Position.X, platform.Position.Y, root.Position.Z)
-            -- Cambiar color a Rainbow
             platform.Color = getRainbowColor(0.3) 
         end
     end)
@@ -71,7 +69,7 @@ local fObj = hud:AddFolder("OBJETOS 🗺️")
 fObj:AddButton("BUSCAR 🔎", function()
     teleporting = not teleporting
     if teleporting then
-        hud:Notify("Buscando Objetos...", 2)
+        hud:Notify("Buscando...", 2)
         task.spawn(function()
             createPlatform()
             while teleporting do
@@ -85,7 +83,7 @@ fObj:AddButton("BUSCAR 🔎", function()
             destroyPlatform()
         end)
     else
-        hud:Notify("Búsqueda Detenida", 2)
+        hud:Notify("Detenido", 2)
     end
 end)
 
@@ -111,9 +109,12 @@ end)
 
 hud:AddButton("GANAR 🏁", function()
     local t = workspace:FindFirstChild("Utility") and workspace.Utility.Teleporters.Portal_to_Wc.Collision
-    if t then 
-        createPlatform() 
-        teleportTo(t) 
-        hud:Notify("Teletransportado a Meta", 2)
-    end
+    if t then createPlatform() teleportTo(t) hud:Notify("Meta", 2) end
+end)
+
+-- NUEVO: TABLA DE PUNTOS
+hud:AddButton("TABLA 📊", function()
+    local state = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.PlayerList)
+    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, not state)
+    hud:Notify(not state and "Tabla Visible" or "Tabla Oculta", 1)
 end)
