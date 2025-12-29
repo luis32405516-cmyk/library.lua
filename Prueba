@@ -15,10 +15,8 @@ local stickerPaths = {
     "ActiveStickers.wo09", "ActiveStickers.wo10"
 }
 
--- Lógica de Color Rainbow
-local function getRainbowColor(speed)
-    return Color3.fromHSV((tick() * (speed or 0.5)) % 1, 1, 1)
-end
+-- Colores y Plataforma
+local function getRainbowColor(speed) return Color3.fromHSV((tick() * (speed or 0.5)) % 1, 1, 1) end
 
 local function destroyPlatform()
     if platformConn then platformConn:Disconnect() end
@@ -30,13 +28,8 @@ local function createPlatform()
     if platform then return end
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
-    
     platform = Instance.new("Part", workspace)
-    platform.Size = Vector3.new(6, 1, 6)
-    platform.Anchored = true
-    platform.Transparency = 0.35
-    platform.CanCollide = true
-    
+    platform.Size, platform.Anchored, platform.Transparency, platform.CanCollide = Vector3.new(6, 1, 6), true, 0.35, true
     platformConn = RunService.Heartbeat:Connect(function()
         local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if root and platform then 
@@ -46,6 +39,7 @@ local function createPlatform()
     end)
 end
 
+-- Teletransporte
 local function teleportTo(target)
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if hrp and target then
@@ -58,14 +52,10 @@ local function tpToSticker(idx)
     local node = workspace
     for seg in stickerPaths[idx]:gmatch("[^%.]+") do node = node and node:FindFirstChild(seg) end
     local touch = node and node:FindFirstChild("Touch")
-    if touch then 
-        createPlatform() 
-        teleportTo(touch)
-        hud:Notify("STICKER: " .. idx, 2)
-    end
+    if touch then createPlatform() teleportTo(touch) hud:Notify("STICKER: "..idx, 2) end
 end
 
--- CARPETA OBJETOS
+-- CARPETAS
 local fObj = hud:AddFolder("OBJETOS 🗺️")
 fObj:AddButton("BUSCAR 🔎", function()
     teleporting = not teleporting
@@ -75,70 +65,40 @@ fObj:AddButton("BUSCAR 🔎", function()
             createPlatform()
             while teleporting do
                 local t = workspace:FindFirstChild("Pickups") and workspace.Pickups:FindFirstChild("Default")
-                if t then 
-                    local part = t:IsA("Model") and (t.PrimaryPart or t:FindFirstChildWhichIsA("BasePart")) or t
-                    teleportTo(part) 
-                end
+                if t then teleportTo(t:IsA("Model") and (t.PrimaryPart or t:FindFirstChildWhichIsA("BasePart")) or t) end
                 task.wait(0.1)
             end
             destroyPlatform()
         end)
-    else
-        hud:Notify("Detenido", 2)
-    end
+    else hud:Notify("Detenido", 2) end
 end)
 
--- CARPETA CHECKPOINTS
 local fCheck = hud:AddFolder("CHECKPOINTS 🔙🔜")
 fCheck:AddRowButtons(
-    {text = "◀️", callback = function() 
-        currentIdx = math.max(1, currentIdx - 1)
-        tpToSticker(currentIdx)
-    end},
-    {text = "▶️", callback = function() 
-        currentIdx = math.min(#stickerPaths, currentIdx + 1)
-        tpToSticker(currentIdx)
-    end}
+    {text = "◀️", callback = function() currentIdx = math.max(1, currentIdx - 1) tpToSticker(currentIdx) end},
+    {text = "▶️", callback = function() currentIdx = math.min(#stickerPaths, currentIdx + 1) tpToSticker(currentIdx) end}
 )
 
--- BOTONES GENERALES
-hud:AddButton("PLATAFORMA 🌈", function() 
-    if platform then destroyPlatform() else createPlatform() end 
-end)
-
+-- BOTONES
+hud:AddButton("PLATAFORMA 🌈", function() if platform then destroyPlatform() else createPlatform() end end)
 hud:AddButton("GANAR 🏁", function()
     local t = workspace:FindFirstChild("Utility") and workspace.Utility.Teleporters.Portal_to_Wc.Collision
     if t then createPlatform() teleportTo(t) hud:Notify("Meta", 2) end
 end)
 
--- BOTÓN TABLA INTELIGENTE (Detecta la ventana de tus fotos)
-hud:AddButton("TABLA UGC 📊", function()
-    local pGui = LocalPlayer:FindFirstChild("PlayerGui")
-    local found = false
+-- BOTÓN DE PRUEBA DE UBICACIÓN (La que tú pasaste)
+hud:AddButton("PROBAR TABLA 📊", function()
+    pcall(function()
+        -- Intentamos la ruta que tú encontraste
+        local target = LocalPlayer.PlayerGui.ProximityPrompts.Default.PromptFrame.InputFrame.Frame.ProgressBar
+        target.Visible = not target.Visible
+        hud:Notify("Estado cambiado", 1)
+    end)
     
-    if pGui then
-        for _, gui in ipairs(pGui:GetChildren()) do
-            -- Busca palabras clave en el nombre de la interfaz
-            local name = gui.Name:lower()
-            if name:find("ugc") or name:find("leaderboard") or name:find("rank") or name:find("point") then
-                if gui:IsA("ScreenGui") then
-                    gui.Enabled = not gui.Enabled
-                    found = true
-                end
-                -- También intenta activar el Frame interno por si acaso
-                local mainFrame = gui:FindFirstChildWhichIsA("Frame")
-                if mainFrame then
-                    mainFrame.Visible = not mainFrame.Visible
-                    found = true
-                end
-            end
+    -- También intentamos abrir el UGC por si acaso
+    for _, v in ipairs(LocalPlayer.PlayerGui:GetChildren()) do
+        if v.Name:lower():find("ugc") or v.Name:lower():find("leaderboard") then
+            if v:IsA("ScreenGui") then v.Enabled = not v.Enabled end
         end
     end
-    
-    -- Si no detecta nada personalizado, usa la de Roblox como respaldo
-    if not found then
-        local state = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.PlayerList)
-        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, not state)
-    end
-    hud:Notify("Tabla Alternada", 1)
 end)
