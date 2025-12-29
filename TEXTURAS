@@ -3,67 +3,63 @@ local hud = RainbowUI:CreateWindow(230, 280)
 
 local Player = game:GetService("Players").LocalPlayer
 
--- Función para aplicar accesorios y ropa
-local function applyFullLook(shirtID, pantsID, accessoryIDs)
+-- Función unificada para aplicar skins
+local function applySkin(shirtID, pantsID, accessories)
     local char = Player.Character
     if not char then return end
 
-    -- 1. Aplicar Camisa (Top)
+    -- Aplicar Ropa
     local s = char:FindFirstChildOfClass("Shirt") or Instance.new("Shirt", char)
-    s.ShirtTemplate = "rbxassetid://" .. shirtID
+    s.ShirtTemplate = "rbxassetid://" .. (shirtID or "")
     
-    -- 2. Aplicar Pantalón (Bottom)
     local p = char:FindFirstChildOfClass("Pants") or Instance.new("Pants", char)
-    p.PantsTemplate = "rbxassetid://" .. pantsID
+    p.PantsTemplate = "rbxassetid://" .. (pantsID or "")
 
-    -- 3. Aplicar Accesorios (Capa, Casco, Alas, etc.)
-    -- Nota: Usamos GetObjects para cargar accesorios del catálogo localmente
-    for _, id in ipairs(accessoryIDs) do
-        task.spawn(function()
-            local success, assets = pcall(function()
-                return game:GetObjects("rbxassetid://" .. id)
+    -- Aplicar Accesorios (Solo si hay IDs en la tabla)
+    if accessories then
+        for _, id in ipairs(accessories) do
+            task.spawn(function()
+                pcall(function()
+                    local asset = game:GetObjects("rbxassetid://" .. id)[1]
+                    if asset then asset.Parent = char end
+                end)
             end)
-            if success and assets[1] then
-                local acc = assets[1]
-                if acc:IsA("Accessory") or acc:IsA("Model") then
-                    acc.Parent = char
-                end
-            end
-        end)
+        end
     end
-    
-    hud:Notify("SKIN 1: KINGS KNIGHT ✅", 3)
 end
 
 -- CARPETA TEXTURAS
 local fTexturas = hud:AddFolder("TEXTURAS 👕")
 
--- BOTÓN SKIN 1 (Caballero Real)
+-- BOTÓN SKIN 1: KINGS KNIGHT
 fTexturas:AddButton("SKIN 1", function()
-    local shirt = "17615400950" -- Black Gold Kleos Top
-    local pants = "17615468259" -- Black Gold Kleos Bottom
-    
-    local accessories = {
-        "136585179769622", -- Kings Knight Armor
-        "114860432799719", -- Kings Knight Wings
-        "113540764470202", -- Left Pauldron
-        "71926774402552",  -- Right Pauldron
-        "85629852617395",  -- Kings Knight Helmet
-        "72503351364631"   -- Leg Protector
+    local shirt = "17615400950" 
+    local pants = "17615468259"
+    local accs = {
+        "136585179769622", "114860432799719", "113540764470202",
+        "71926774402552", "85629852617395", "72503351364631"
     }
-    
-    applyFullLook(shirt, pants, accessories)
+    applySkin(shirt, pants, accs)
+    hud:Notify("SKIN 1: Caballero Real 🛡️", 2)
 end)
 
--- Botón para limpiar todo
+-- BOTÓN SKIN 2: GOTH STYLE (La que me pasaste)
+fTexturas:AddButton("SKIN 2", function()
+    local shirt = "12568533433" -- Camisa Goth que enviaste
+    local pants = "11333190"    -- Pantalones negros básicos para combinar
+    applySkin(shirt, pants)
+    hud:Notify("SKIN 2: Goth Style 💀", 2)
+end)
+
+-- BOTÓN PARA REINICIAR SKIN
 hud:AddButton("QUITAR TODO ❌", function()
     local char = Player.Character
     if char then
         for _, obj in ipairs(char:GetChildren()) do
-            if obj:IsA("Shirt") or obj:IsA("Pants") or obj:IsA("Accessory") or obj:IsA("ShirtGraphic") then
+            if obj:IsA("Shirt") or obj:IsA("Pants") or obj:IsA("Accessory") then
                 obj:Destroy()
             end
         end
-        hud:Notify("Skin reseteada", 2)
     end
+    hud:Notify("Skin reseteada", 2)
 end)
