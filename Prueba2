@@ -69,6 +69,7 @@ function RainbowUI:CreateWindow(width, height)
 
     local list = Instance.new("UIListLayout", scroll)
     list.Padding = UDim.new(0, 5)
+    list.SortOrder = Enum.SortOrder.LayoutOrder
 
     local collapseBtn = Instance.new("TextButton", bar)
     collapseBtn.Text = "—"
@@ -109,6 +110,7 @@ end
 
 function RainbowUI:AddFolder(name)
     local folderApi = {_open = false}
+    
     local btn = Instance.new("TextButton", self._scroll)
     btn.Text = "[+] " .. name
     btn.Size = UDim2.new(1, 0, 0, 25)
@@ -116,7 +118,7 @@ function RainbowUI:AddFolder(name)
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.GothamBold
     btn.ZIndex = 3
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6) -- Redondeo aplicado
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
     local container = Instance.new("Frame", self._scroll)
     container.Size = UDim2.new(1, 0, 0, 0)
@@ -124,7 +126,10 @@ function RainbowUI:AddFolder(name)
     container.Visible = false
     container.AutomaticSize = Enum.AutomaticSize.Y
     container.ZIndex = 3
-    Instance.new("UIListLayout", container).Padding = UDim.new(0, 3)
+    
+    local layout = Instance.new("UIListLayout", container)
+    layout.Padding = UDim.new(0, 3)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
 
     btn.MouseButton1Click:Connect(function()
         folderApi._open = not folderApi._open
@@ -140,7 +145,7 @@ function RainbowUI:AddFolder(name)
         b.TextColor3 = Color3.new(0.9, 0.9, 1)
         b.Font = Enum.Font.GothamSemibold
         b.ZIndex = 4
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6) -- Redondeo aplicado
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
         b.MouseButton1Click:Connect(cb)
     end
 
@@ -149,6 +154,7 @@ function RainbowUI:AddFolder(name)
         row.Size = UDim2.new(1, 0, 0, 25)
         row.BackgroundTransparency = 1
         row.ZIndex = 4
+        
         local function createB(d, pos)
             local b = Instance.new("TextButton", row)
             b.Size = UDim2.new(0.5, -2, 1, 0)
@@ -157,7 +163,7 @@ function RainbowUI:AddFolder(name)
             b.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
             b.TextColor3 = Color3.new(1, 1, 1)
             b.ZIndex = 5
-            Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6) -- Redondeo aplicado
+            Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
             b.MouseButton1Click:Connect(d.callback)
         end
         createB(b1d, UDim2.new(0, 0, 0, 0))
@@ -174,7 +180,7 @@ function RainbowUI:AddButton(text, cb)
     b.TextColor3 = Color3.new(1, 1, 1)
     b.Font = Enum.Font.GothamBold
     b.ZIndex = 3
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6) -- Redondeo aplicado
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
     b.MouseButton1Click:Connect(cb)
 end
 
@@ -189,6 +195,7 @@ function RainbowUI:Notify(text, duration)
         n.Font = Enum.Font.GothamBold
         n.TextSize = 14
         n.ZIndex = 1000
+        
         local b = Instance.new("Frame", n)
         b.Size = UDim2.new(1, 0, 0, 2)
         b.Position = UDim2.new(0, 0, 1, 0)
