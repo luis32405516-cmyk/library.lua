@@ -1,4 +1,3 @@
--- Forzamos la descarga para evitar el caché
 local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2?v=" .. tick()))()
 local hud = RainbowUI:CreateWindow(230, 380)
 
@@ -9,37 +8,21 @@ local winRemote = events:WaitForChild("PushEvent")
 local state = { click = false, win = false }
 
 local fFarm = hud:AddFolder("AUTO FARM 🥊")
-
 fFarm:AddButton("AUTO CLICK", function()
     state.click = not state.click
-    task.spawn(function()
-        while state.click do
-            clickRemote:FireServer()
-            task.wait(0.1)
-        end
-    end)
+    task.spawn(function() while state.click do clickRemote:FireServer() task.wait(0.1) end end)
 end)
-
 fFarm:AddButton("GANAR PELEA 🏆", function()
     state.win = not state.win
-    task.spawn(function()
-        while state.win do
-            winRemote:FireServer(true)
-            task.wait(0) -- Velocidad máxima
-        end
-    end)
+    task.spawn(function() while state.win do winRemote:FireServer(true) task.wait(0) end end)
 end)
 
 local fMov = hud:AddFolder("AJUSTES PERSONAJE ⚙️")
-
 fMov:AddSlider("SALTO", 50, 500, 50, function(v)
     local h = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     if h then h.JumpPower = v h.UseJumpPower = true end
 end)
-
 fMov:AddSlider("VELOCIDAD", 16, 250, 16, function(v)
     local h = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     if h then h.WalkSpeed = v end
 end)
-
-hud:Notify("Librería y Script verificados ✅", 3)
