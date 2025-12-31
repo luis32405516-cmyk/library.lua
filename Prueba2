@@ -12,6 +12,8 @@ function RainbowUI:CreateWindow(width, height)
     local sg = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer.PlayerGui)
     sg.Name = "RainbowUI"
     sg.ResetOnSpawn = false
+    api._sg = sg
+
     local frame = Instance.new("Frame", sg)
     frame.Size = UDim2.fromOffset(width or 230, 26)
     frame.Position = UDim2.fromOffset(160, 180)
@@ -19,10 +21,12 @@ function RainbowUI:CreateWindow(width, height)
     frame.BorderSizePixel = 0
     frame.Active = true
     api._frame = frame
+    
     local bar = Instance.new("Frame", frame)
     bar.Size = UDim2.new(1, 0, 0, 26)
     bar.BackgroundColor3 = Color3.fromRGB(20, 20, 32)
     bar.ZIndex = 50
+
     local dragging, dragStart, startPos
     bar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -36,6 +40,7 @@ function RainbowUI:CreateWindow(width, height)
             frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
+
     local title = Instance.new("TextLabel", bar)
     title.Size = UDim2.new(1, -60, 1, 0)
     title.Position = UDim2.fromOffset(10, 0)
@@ -43,8 +48,8 @@ function RainbowUI:CreateWindow(width, height)
     title.Font = Enum.Font.GothamBold
     title.TextColor3 = Color3.new(1, 1, 1)
     title.BackgroundTransparency = 1
-    title.TextXAlignment = Enum.TextXAlignment.Left
     title.ZIndex = 51
+
     local scroll = Instance.new("ScrollingFrame", frame)
     scroll.Size = UDim2.new(1, -10, 1, -34)
     scroll.Position = UDim2.fromOffset(5, 30)
@@ -54,6 +59,7 @@ function RainbowUI:CreateWindow(width, height)
     scroll.ZIndex = 5
     api._scroll = scroll
     Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 5)
+
     local collapseBtn = Instance.new("TextButton", bar)
     collapseBtn.Text = "v"
     collapseBtn.Size = UDim2.fromOffset(25, 25)
@@ -65,11 +71,27 @@ function RainbowUI:CreateWindow(width, height)
         scroll.Visible = not scroll.Visible
         frame.Size = scroll.Visible and UDim2.fromOffset(width or 230, height or 400) or UDim2.fromOffset(width or 230, 26)
     end)
+
     return api
 end
 
+function RainbowUI:Notify(txt)
+    task.spawn(function()
+        local n = Instance.new("TextLabel", self._sg)
+        n.Size = UDim2.new(0, 200, 0, 30)
+        n.Position = UDim2.new(0.5, -100, 0.1, 0)
+        n.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+        n.TextColor3 = Color3.new(1, 1, 1)
+        n.Text = txt
+        n.ZIndex = 100
+        Instance.new("UICorner", n)
+        task.wait(2)
+        n:Destroy()
+    end)
+end
+
 function RainbowUI:AddFolder(name)
-    local folderApi = {_open = false}
+    local folderApi = {_open = false, _parent = self}
     local btn = Instance.new("TextButton", self._scroll)
     btn.Text = "[+] " .. name
     btn.Size = UDim2.new(1, 0, 0, 25)
@@ -77,6 +99,7 @@ function RainbowUI:AddFolder(name)
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.ZIndex = 10
     Instance.new("UICorner", btn)
+
     local container = Instance.new("Frame", self._scroll)
     container.Size = UDim2.new(1, 0, 0, 0)
     container.BackgroundTransparency = 1
@@ -84,11 +107,13 @@ function RainbowUI:AddFolder(name)
     container.AutomaticSize = Enum.AutomaticSize.Y
     container.ZIndex = 10
     Instance.new("UIListLayout", container).Padding = UDim.new(0, 3)
+
     btn.MouseButton1Click:Connect(function()
         folderApi._open = not folderApi._open
         container.Visible = folderApi._open
         btn.Text = (folderApi._open and "[-] " or "[+] ") .. name
     end)
+
     function folderApi:AddButton(text, cb)
         local b = Instance.new("TextButton", container)
         b.Text = text
@@ -99,6 +124,7 @@ function RainbowUI:AddFolder(name)
         Instance.new("UICorner", b)
         b.MouseButton1Click:Connect(cb)
     end
+
     function folderApi:AddSlider(text, min, max, default, callback)
         local sFrame = Instance.new("Frame", container)
         sFrame.Size = UDim2.new(1, 0, 0, 38)
