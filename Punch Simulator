@@ -1,22 +1,18 @@
--- Cargando tu librería desde GitHub
 local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2"))()
-local hud = RainbowUI:CreateWindow(230, 260)
+local hud = RainbowUI:CreateWindow(230, 280)
 
--- Referencias de servicios y eventos (Verificado)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local clickEvent = ReplicatedStorage:WaitForChild("Events"):WaitForChild("DamageIncreaseOnClickEvent")
 
--- Variables de estado
 local state = {
     autoClick = false,
-    speed = 0.1
+    speed = 0.1 -- Velocidad inicial (Rápida)
 }
 
--- Carpeta Principal
 local fFarm = hud:AddFolder("AUTO CLICKER 🥊")
 
--- Función de Auto-Click optimizada
-local function startAutoClick()
+-- Función de bucle de clics
+local function runAutoClick()
     task.spawn(function()
         while state.autoClick do
             clickEvent:FireServer()
@@ -25,28 +21,34 @@ local function startAutoClick()
     end)
 end
 
--- Botón de Activación
-fFarm:AddButton("ALTERNAR AUTO-CLICK", function()
+-- Botón principal para encender/apagar
+fFarm:AddButton("ACTIVAR / DESACTIVAR", function()
     state.autoClick = not state.autoClick
-    
-    if state.autoClick then
-        hud:Notify("Auto-Click: ACTIVADO ✅", 2)
-        startAutoClick()
-    else
-        hud:Notify("Auto-Click: DESACTIVADO ❌", 2)
-    end
+    hud:Notify(state.autoClick and "Auto-Clicker ON ✅" or "Auto-Clicker OFF ❌", 2)
+    if state.autoClick then runAutoClick() end
 end)
 
--- Slider de Velocidad (Ajuste fino)
-fFarm:AddSlider("VELOCIDAD (0.01 = MAX)", 0.01, 0.5, 0.1, function(value)
-    state.speed = value
+-- Carpeta para ajustar la velocidad con botones (Ya que el Slider no está en la lib)
+local fSpeed = hud:AddFolder("VELOCIDAD ⚡")
+
+fSpeed:AddButton("MÁXIMA (0.01)", function() 
+    state.speed = 0.01 
+    hud:Notify("Velocidad: Máxima 🚀", 1)
 end)
 
--- Utilidad adicional
-hud:AddButton("VELOCIDAD JUGADOR ⚡", function()
+fSpeed:AddButton("RÁPIDA (0.1)", function() 
+    state.speed = 0.1 
+    hud:Notify("Velocidad: Rápida ⚡", 1)
+end)
+
+fSpeed:AddButton("NORMAL (0.3)", function() 
+    state.speed = 0.3 
+    hud:Notify("Velocidad: Normal 🐢", 1)
+end)
+
+hud:AddButton("VELOCIDAD JUGADOR 🏃", function()
     local char = game.Players.LocalPlayer.Character
     if char and char:FindFirstChild("Humanoid") then
         char.Humanoid.WalkSpeed = 60
-        hud:Notify("Velocidad: 60", 1)
     end
 end)
