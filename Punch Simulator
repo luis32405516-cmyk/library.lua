@@ -1,62 +1,45 @@
-local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2"))()
+-- Forzamos la descarga para evitar el caché
+local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2?v=" .. tick()))()
 local hud = RainbowUI:CreateWindow(230, 380)
 
 local events = game:GetService("ReplicatedStorage"):WaitForChild("Events")
 local clickRemote = events:WaitForChild("DamageIncreaseOnClickEvent")
 local winRemote = events:WaitForChild("PushEvent")
 
-local settings = {
-    autoClick = false,
-    autoWin = false,
-    clickDelay = 0.1,
-    winDelay = 0 -- Super rápido como pediste
-}
+local state = { click = false, win = false }
 
 local fFarm = hud:AddFolder("AUTO FARM 🥊")
 
--- Lógica de combate
-local function doClick()
-    task.spawn(function()
-        while settings.autoClick do
-            clickRemote:FireServer()
-            task.wait(settings.clickDelay)
-        end
-    end)
-end
-
-local function doWin()
-    task.spawn(function()
-        while settings.autoWin do
-            winRemote:FireServer(true)
-            task.wait(settings.winDelay)
-        end
-    end)
-end
-
 fFarm:AddButton("AUTO CLICK", function()
-    settings.autoClick = not settings.autoClick
-    if settings.autoClick then doClick() end
+    state.click = not state.click
+    task.spawn(function()
+        while state.click do
+            clickRemote:FireServer()
+            task.wait(0.1)
+        end
+    end)
 end)
 
 fFarm:AddButton("GANAR PELEA 🏆", function()
-    settings.autoWin = not settings.autoWin
-    if settings.autoWin then doWin() end
+    state.win = not state.win
+    task.spawn(function()
+        while state.win do
+            winRemote:FireServer(true)
+            task.wait(0) -- Velocidad máxima
+        end
+    end)
 end)
 
-local fMov = hud:AddFolder("MOVIMIENTO 🏃")
+local fMov = hud:AddFolder("AJUSTES PERSONAJE ⚙️")
 
--- SLIDERS RECIÉN CREADOS
-fMov:AddSlider("FUERZA SALTO", 50, 500, 50, function(v)
-    local hum = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.UseJumpPower = true
-        hum.JumpPower = v
-    end
+fMov:AddSlider("SALTO", 50, 500, 50, function(v)
+    local h = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if h then h.JumpPower = v h.UseJumpPower = true end
 end)
 
-fMov:AddSlider("VELOCIDAD", 16, 200, 16, function(v)
-    local hum = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if hum then hum.WalkSpeed = v end
+fMov:AddSlider("VELOCIDAD", 16, 250, 16, function(v)
+    local h = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if h then h.WalkSpeed = v end
 end)
 
-hud:Notify("Script con Sliders Listo!", 3)
+hud:Notify("Librería y Script verificados ✅", 3)
