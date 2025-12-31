@@ -1,0 +1,42 @@
+local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2"))()
+local hud = RainbowUI:CreateWindow(230, 300)
+
+local fFarm = hud:AddFolder("FARM AUTOMÁTICO 🥊")
+local _G = _G or {}
+_G.AutoPunch = false
+_G.AutoHatch = false
+
+-- Función para dar golpes automáticamente
+fFarm:AddButton("AUTO GOLPE: OFF", function()
+    _G.AutoPunch = not _G.AutoPunch
+    hud:Notify(_G.AutoPunch and "Auto-Punch activado" or "Auto-Punch desactivado", 2)
+    
+    task.spawn(function()
+        while _G.AutoPunch do
+            -- Este es el evento común en Punch Simulators
+            game:GetService("ReplicatedStorage").Events.DamageEvent:FireServer()
+            task.wait(0.1)
+        end
+    end)
+end)
+
+local fPets = hud:AddFolder("MASCOTAS 🐾")
+
+-- Función para abrir huevos automáticamente
+fPets:AddButton("AUTO HUEVO (Básico)", function()
+    _G.AutoHatch = not _G.AutoHatch
+    hud:Notify(_G.AutoHatch and "Abriendo huevos..." or "Parado", 2)
+    
+    task.spawn(function()
+        while _G.AutoHatch do
+            -- Nota: "Huevo1" es un nombre de ejemplo, cambia según el juego
+            game:GetService("ReplicatedStorage").Events.PurchaseEgg:FireServer("Huevo1")
+            task.wait(1)
+        end
+    end)
+end)
+
+hud:AddButton("VELOCIDAD X2 (Visual)", function()
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 32
+    hud:Notify("Velocidad aumentada", 2)
+end)
