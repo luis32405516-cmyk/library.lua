@@ -52,3 +52,4 @@ hud:AddButton("VELOCIDAD JUGADOR 🏃", function()
         char.Humanoid.WalkSpeed = 60
     end
 end)
+
