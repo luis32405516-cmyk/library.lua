@@ -1,26 +1,21 @@
--- Referencia a la librería y creación de ventana
 local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2"))()
 local hud = RainbowUI:CreateWindow(230, 320)
 
--- Servicios y Eventos centralizados
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local events = ReplicatedStorage:WaitForChild("Events")
+local events = game:GetService("ReplicatedStorage"):WaitForChild("Events")
 local clickRemote = events:WaitForChild("DamageIncreaseOnClickEvent")
 local winRemote = events:WaitForChild("PushEvent")
 
--- Configuración de estado
 local settings = {
     autoClick = false,
     autoWin = false,
     clickDelay = 0.1,
-    winDelay = 0.2
+    winDelay = 0 -- Velocidad Máxima (Instantánea)
 }
 
--- Carpeta Principal: AUTO FARM
-local farmFolder = hud:AddFolder("AUTO FARM 🥊")
+local farm = hud:AddFolder("AUTO FARM 🥊")
 
--- Lógica de Auto-Click (Bucle optimizado)
-local function startClicker()
+-- Bucle de Auto-Click
+local function doClick()
     task.spawn(function()
         while settings.autoClick do
             clickRemote:FireServer()
@@ -29,47 +24,37 @@ local function startClicker()
     end)
 end
 
--- Lógica de Auto-Win (Bucle optimizado)
-local function startWinBot()
+-- Bucle de Auto-Win (Velocidad 0)
+local function doWin()
     task.spawn(function()
-        local payload = {true}
+        local arg = {true}
         while settings.autoWin do
-            winRemote:FireServer(unpack(payload))
+            winRemote:FireServer(unpack(arg))
             task.wait(settings.winDelay)
         end
     end)
 end
 
--- Botones de Control
-farmFolder:AddButton("AUTO CLICK: ON/OFF", function()
+farm:AddButton("AUTO CLICK: ON/OFF", function()
     settings.autoClick = not settings.autoClick
-    hud:Notify(settings.autoClick and "Clicker Activo" or "Clicker Detenido", 1)
-    if settings.autoClick then startClicker() end
+    hud:Notify("Clicker: " .. (settings.autoClick and "ON" or "OFF"), 1)
+    if settings.autoClick then doClick() end
 end)
 
-farmFolder:AddButton("GANAR PELEA 🏆", function()
+farm:AddButton("GANAR PELEA 🏆", function()
     settings.autoWin = not settings.autoWin
-    hud:Notify(settings.autoWin and "Auto-Win Activo" or "Auto-Win Detenido", 1)
-    if settings.autoWin then startWinBot() end
+    hud:Notify("Win: " .. (settings.autoWin and "ON" or "OFF"), 1)
+    if settings.autoWin then doWin() end
 end)
 
--- Carpeta de Ajustes: VELOCIDAD
-local speedFolder = hud:AddFolder("VELOCIDAD CLICK ⚡")
+local config = hud:AddFolder("CONFIGURACIÓN ⚙️")
 
-speedFolder:AddButton("MÁXIMA (0.01)", function() 
+config:AddButton("CLICK MÁXIMO (0.01)", function() 
     settings.clickDelay = 0.01 
-    hud:Notify("Velocidad Máxima", 1)
+    hud:Notify("Click al máximo", 1)
 end)
 
-speedFolder:AddButton("ESTÁNDAR (0.1)", function() 
-    settings.clickDelay = 0.1 
-    hud:Notify("Velocidad Estándar", 1)
+hud:AddButton("VELOCIDAD 🏃", function()
+    local h = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if h then h.WalkSpeed = 100 end
 end)
-
--- Utilidades de Jugador
-hud:AddButton("SUPER VELOCIDAD 🏃", function()
-    local hum = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if hum then hum.WalkSpeed = 80 end
-    hud:Notify("Velocidad 80", 1)
-end)
-
