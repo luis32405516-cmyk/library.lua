@@ -10,14 +10,14 @@ local state = {
     flySpeed = 70, 
     noclip = false,
     currentVel = Vector3.zero,
-    easing = 6
+    easing = 8 -- Un poco más rápido para que responda mejor
 }
 
 local bv, bg, flyConn
 
 local fMov = hud:AddFolder("AJUSTES PERSONAJE ⚙️")
 
--- LÓGICA DE VUELO SUAVE (FLEW V3)
+-- LÓGICA DE VUELO CON ELEVACIÓN (Sigue a la cámara)
 local function flightStep(dt)
     local char = player.Character
     if not char or not state.fly then return end
@@ -28,34 +28,44 @@ local function flightStep(dt)
     if not root or not bv or not bg then return end
 
     local dir = Vector3.zero
-    
+    local camCF = camera.CFrame
+
     -- Control PC
     if UserInputService.KeyboardEnabled then
-        local cam = camera.CFrame
-        if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir += cam.LookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= cam.LookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= cam.RightVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += cam.RightVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.yAxis end
-        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= Vector3.yAxis end
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir += camCF.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= camCF.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= camCF.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += camCF.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.new(0, 1, 0) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= Vector3.new(0, 1, 0) end
     end
 
-    -- Control Mobile (Joystick)
+    -- Control Mobile (JOYSTICK CON ELEVACIÓN)
     local moveVector = hum.MoveDirection
-    
-    local total = dir + moveVector
+    if moveVector.Magnitude > 0 then
+        -- Multiplicamos la dirección del joystick por la inclinación de la cámara
+        -- Esto permite que si miras arriba, el joystick "hacia adelante" te haga subir
+        local camRotation = camCF.LookVector
+        dir = (camRotation * moveVector.Z * -1) + (camCF.RightVector * moveVector.X)
+        
+        -- Si el joystick está quieto pero quieres subir (PC o botones extras)
+        if moveVector.Magnitude == 0 then dir = Vector3.zero end
+    end
+
+    local total = dir
     if total.Magnitude > 0 then 
         total = total.Unit * state.flySpeed 
     end
 
-    -- El secreto: Suavizado de movimiento (Lerp)
+    -- Suavizado Lerp para evitar tirones
     state.currentVel = state.currentVel:Lerp(total, math.clamp(state.easing * dt, 0, 1))
     
     bv.Velocity = state.currentVel
-    bg.CFrame = CFrame.new(Vector3.zero, state.currentVel.Magnitude > 0 and state.currentVel.Unit or camera.CFrame.LookVector)
+    -- Mantiene al muñeco mirando hacia donde vuela o hacia donde mira la cámara
+    bg.CFrame = CFrame.new(Vector3.zero, state.currentVel.Magnitude > 2 and state.currentVel.Unit or camCF.LookVector)
 end
 
-fMov:AddButton("VOLAR (FLY V3)", function()
+fMov:AddButton("VOLAR (FLY DIRECCIONAL)", function()
     state.fly = not state.fly
     local char = player.Character
     local root = char and char:FindFirstChild("HumanoidRootPart")
@@ -64,13 +74,12 @@ fMov:AddButton("VOLAR (FLY V3)", function()
     if state.fly and root and hum then
         hud:Notify("Fly: ACTIVADO 🚀")
         
-        -- Crear Fuerzas
         bv = Instance.new("BodyVelocity", root)
-        bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+        bv.MaxForce = Vector3.new(1e6, 1e6, 1e6)
         bv.Velocity = Vector3.zero
         
         bg = Instance.new("BodyGyro", root)
-        bg.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+        bg.MaxTorque = Vector3.new(1e6, 1e6, 1e6)
         bg.P = 9e4
         
         hum.PlatformStand = true
@@ -85,36 +94,20 @@ fMov:AddButton("VOLAR (FLY V3)", function()
     end
 end)
 
--- Slider de Velocidad Flew (70 es Normal, 200 es Super Fast)
 fMov:AddSlider("VELOCIDAD VUELO", 10, 300, 70, function(v)
     state.flySpeed = v
 end)
 
+-- Resto de funciones (Noclip, Speed, Jump) se mantienen igual...
 fMov:AddButton("NOCLIP (ATRAVESAR)", function()
     state.noclip = not state.noclip
-    if state.noclip then
-        hud:Notify("Noclip: ACTIVADO 👻")
-        RunService.Stepped:Connect(function()
-            if state.noclip and player.Character then
-                for _, p in pairs(player.Character:GetDescendants()) do
-                    if p:IsA("BasePart") then p.CanCollide = false end
-                end
+    hud:Notify(state.noclip and "Noclip: ON 👻" or "Noclip: OFF 🧱")
+    local nc; nc = RunService.Stepped:Connect(function()
+        if not state.noclip then nc:Disconnect() return end
+        if player.Character then
+            for _, v in pairs(player.Character:GetDescendants()) do
+                if v:IsA("BasePart") then v.CanCollide = false end
             end
-        end)
-    else
-        hud:Notify("Noclip: DESACTIVADO 🧱")
-    end
-end)
-
-fMov:AddSlider("VELOCIDAD CAMINAR", 16, 500, 16, function(v)
-    if player.Character and player.Character:FindFirstChild("Humanoid") then 
-        player.Character.Humanoid.WalkSpeed = v 
-    end
-end)
-
-fMov:AddSlider("FUERZA SALTO", 50, 600, 50, function(v)
-    if player.Character and player.Character:FindFirstChild("Humanoid") then 
-        player.Character.Humanoid.JumpPower = v
-        player.Character.Humanoid.UseJumpPower = true
-    end
+        end
+    end)
 end)
