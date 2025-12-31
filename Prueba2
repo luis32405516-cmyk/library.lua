@@ -116,7 +116,7 @@ function RainbowUI:AddFolder(name)
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.GothamBold
     btn.ZIndex = 3
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6) -- Redondeo aplicado
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
     local container = Instance.new("Frame", self._scroll)
     container.Size = UDim2.new(1, 0, 0, 0)
@@ -140,29 +140,75 @@ function RainbowUI:AddFolder(name)
         b.TextColor3 = Color3.new(0.9, 0.9, 1)
         b.Font = Enum.Font.GothamSemibold
         b.ZIndex = 4
-        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6) -- Redondeo aplicado
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
         b.MouseButton1Click:Connect(cb)
     end
 
-    function folderApi:AddRowButtons(b1d, b2d)
-        local row = Instance.new("Frame", container)
-        row.Size = UDim2.new(1, 0, 0, 25)
-        row.BackgroundTransparency = 1
-        row.ZIndex = 4
-        local function createB(d, pos)
-            local b = Instance.new("TextButton", row)
-            b.Size = UDim2.new(0.5, -2, 1, 0)
-            b.Position = pos
-            b.Text = d.text
-            b.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
-            b.TextColor3 = Color3.new(1, 1, 1)
-            b.ZIndex = 5
-            Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6) -- Redondeo aplicado
-            b.MouseButton1Click:Connect(d.callback)
+    -- NUEVA FUNCIÓN: AddSlider
+    function folderApi:AddSlider(text, min, max, default, callback)
+        local sliderFrame = Instance.new("Frame", container)
+        sliderFrame.Size = UDim2.new(1, 0, 0, 35)
+        sliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+        sliderFrame.ZIndex = 4
+        Instance.new("UICorner", sliderFrame).CornerRadius = UDim.new(0, 6)
+
+        local label = Instance.new("TextLabel", sliderFrame)
+        label.Size = UDim2.new(1, 0, 0, 15)
+        label.Position = UDim2.new(0, 5, 0, 2)
+        label.BackgroundTransparency = 1
+        label.Text = text .. ": " .. default
+        label.TextColor3 = Color3.new(1, 1, 1)
+        label.TextSize = 12
+        label.Font = Enum.Font.GothamBold
+        label.TextXAlignment = Enum.TextXAlignment.Left
+
+        local barBg = Instance.new("Frame", sliderFrame)
+        barBg.Size = UDim2.new(1, -20, 0, 6)
+        barBg.Position = UDim2.new(0, 10, 0, 22)
+        barBg.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+        barBg.BorderSizePixel = 0
+
+        local fill = Instance.new("Frame", barBg)
+        fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+        fill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        fill.BorderSizePixel = 0
+        
+        RunService.RenderStepped:Connect(function()
+            fill.BackgroundColor3 = rainbowColor(0.5)
+        end)
+
+        local dragging = false
+        local function update()
+            local mousePos = UserInputService:GetMouseLocation().X
+            local barPos = barBg.AbsolutePosition.X
+            local barSize = barBg.AbsoluteSize.X
+            local percent = math.clamp((mousePos - barPos) / barSize, 0, 1)
+            fill.Size = UDim2.new(percent, 0, 1, 0)
+            local value = math.floor(min + (max - min) * percent)
+            label.Text = text .. ": " .. value
+            callback(value)
         end
-        createB(b1d, UDim2.new(0, 0, 0, 0))
-        createB(b2d, UDim2.new(0.5, 2, 0, 0))
+
+        sliderFrame.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                update()
+            end
+        end)
+
+        UserInputService.InputChanged:Connect(function(input)
+            if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                update()
+            end
+        end)
+
+        UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = false
+            end
+        end)
     end
+
     return folderApi
 end
 
@@ -174,7 +220,7 @@ function RainbowUI:AddButton(text, cb)
     b.TextColor3 = Color3.new(1, 1, 1)
     b.Font = Enum.Font.GothamBold
     b.ZIndex = 3
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6) -- Redondeo aplicado
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
     b.MouseButton1Click:Connect(cb)
 end
 
