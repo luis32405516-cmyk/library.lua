@@ -1,72 +1,81 @@
 local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2?v=" .. tick()))()
-local hud = RainbowUI:CreateWindow(240, 480)
+local hud = RainbowUI:CreateWindow(240, 520)
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
-local state = { fly = false, flySpeed = 50, noclip = false }
+local state = { fly = false, flySpeed = 1, noclip = false }
 
 local fMov = hud:AddFolder("AJUSTES PERSONAJE ⚙️")
 
--- VUELO CON CONTROL TOTAL
+-- 1. FLY (CONTROL TOTAL V3)
 fMov:AddButton("VOLAR (FLY)", function()
     state.fly = not state.fly
     local char = player.Character
     if not char then return end
-    local root = char:FindFirstChild("HumanoidRootPart")
     local hum = char:FindFirstChildOfClass("Humanoid")
     
     if state.fly then
-        local bv = Instance.new("BodyVelocity", root)
-        local bg = Instance.new("BodyGyro", root)
-        bv.Name = "FlyVel"
-        bg.Name = "FlyGyro"
-        
-        bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-        bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-        bg.P = 15000
+        hud:Notify("Fly: ACTIVADO 🚀")
+        local states = Enum.HumanoidStateType:GetEnumItems()
+        for _, s in pairs(states) do hum:SetStateEnabled(s, false) end
+        hum:ChangeState(Enum.HumanoidStateType.Swimming)
+        char.Animate.Disabled = true
         
         task.spawn(function()
             while state.fly and char:Parent() do
-                local camera = workspace.CurrentCamera
-                hum.PlatformStand = true -- Evita animaciones de caída
-                bg.CFrame = camera.CFrame
-                
-                local moveDir = hum.MoveDirection
-                if moveDir.Magnitude > 0 then
-                    -- Calculamos la dirección basándonos en la cámara y el movimiento del jugador
-                    local direction = camera.CFrame.Rotation * Vector3.new(moveDir.X, 0, moveDir.Z)
-                    bv.Velocity = direction.Unit * state.flySpeed
-                else
-                    bv.Velocity = Vector3.new(0, 0, 0) -- Se detiene en seco si sueltas el control
+                RunService.Heartbeat:Wait()
+                if hum.MoveDirection.Magnitude > 0 then
+                    for i = 1, state.flySpeed do
+                        char:TranslateBy(hum.MoveDirection)
+                    end
                 end
-                RunService.RenderStepped:Wait()
+                char.HumanoidRootPart.Velocity = Vector3.new(0, 0.1, 0)
             end
-            if bv then bv:Destroy() end
-            if bg then bg:Destroy() end
-            hum.PlatformStand = false
+            -- Reset al apagar
+            char.Animate.Disabled = false
+            for _, s in pairs(states) do hum:SetStateEnabled(s, true) end
+            hum:ChangeState(Enum.HumanoidStateType.Running)
         end)
+    else
+        hud:Notify("Fly: DESACTIVADO 🛑")
     end
 end)
 
-fMov:AddSlider("VELOCIDAD VUELO", 10, 1000, 50, function(v)
+-- 2. SLIDER PARA VELOCIDAD DE VUELO
+fMov:AddSlider("FUERZA VUELO", 1, 20, 1, function(v)
     state.flySpeed = v
 end)
 
+-- 3. NOCLIP (BOTÓN ÚNICO)
 fMov:AddButton("NOCLIP (ATRAVESAR)", function()
     state.noclip = not state.noclip
-    RunService.Stepped:Connect(function()
-        if state.noclip and player.Character then
-            for _, p in pairs(player.Character:GetDescendants()) do
-                if p:IsA("BasePart") then p.CanCollide = false end
+    if state.noclip then
+        hud:Notify("Noclip: ACTIVADO 👻")
+        RunService.Stepped:Connect(function()
+            if state.noclip and player.Character then
+                for _, p in pairs(player.Character:GetDescendants()) do
+                    if p:IsA("BasePart") then p.CanCollide = false end
+                end
             end
-        end
-    end)
+        end)
+    else
+        hud:Notify("Noclip: DESACTIVADO 🧱")
+    end
 end)
 
+-- 4. SPEED (VELOCIDAD CAMINAR CON SLIDER)
 fMov:AddSlider("VELOCIDAD CAMINAR", 16, 500, 16, function(v)
     if player.Character and player.Character:FindFirstChild("Humanoid") then 
         player.Character.Humanoid.WalkSpeed = v 
     end
 end)
 
-hud:Notify("¡Control de Vuelo Activado! 🚀", 4)
+-- 5. JUMP (SALTO FUERTE CON SLIDER)
+fMov:AddSlider("FUERZA SALTO", 50, 600, 50, function(v)
+    if player.Character and player.Character:FindFirstChild("Humanoid") then 
+        player.Character.Humanoid.JumpPower = v
+        player.Character.Humanoid.UseJumpPower = true
+    end
+end)
+
+hud:Notify("Script Luis Listo ✅")
