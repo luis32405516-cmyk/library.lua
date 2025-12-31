@@ -1,5 +1,5 @@
 local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2?v=" .. tick()))()
-local hud = RainbowUI:CreateWindow(240, 450)
+local hud = RainbowUI:CreateWindow(240, 480)
 
 local player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
@@ -7,12 +7,13 @@ local state = { fly = false, flySpeed = 50, noclip = false }
 
 local fMov = hud:AddFolder("AJUSTES PERSONAJE ⚙️")
 
--- LÓGICA DE VUELO REAL
+-- VUELO CON CONTROL TOTAL
 fMov:AddButton("VOLAR (FLY)", function()
     state.fly = not state.fly
     local char = player.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    local root = char.HumanoidRootPart
+    if not char then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
     
     if state.fly then
         local bv = Instance.new("BodyVelocity", root)
@@ -27,36 +28,27 @@ fMov:AddButton("VOLAR (FLY)", function()
         task.spawn(function()
             while state.fly and char:Parent() do
                 local camera = workspace.CurrentCamera
-                local hum = char:FindFirstChildOfClass("Humanoid")
-                
-                -- Hacer que el personaje flote sin caer
-                hum.PlatformStand = true
+                hum.PlatformStand = true -- Evita animaciones de caída
                 bg.CFrame = camera.CFrame
                 
-                -- Motor de movimiento basado en el Joystick/WASD
                 local moveDir = hum.MoveDirection
                 if moveDir.Magnitude > 0 then
-                    -- Multiplicamos la dirección de la cámara por el movimiento
-                    bv.Velocity = camera.CFrame.LookVector * (moveDir.Z < 0 and state.flySpeed or -state.flySpeed) + 
-                                  camera.CFrame.RightVector * (moveDir.X > 0 and state.flySpeed or -state.flySpeed)
-                    
-                    -- Corrección si solo vas de lado
-                    if moveDir.Z == 0 then
-                        bv.Velocity = camera.CFrame.RightVector * (moveDir.X * state.flySpeed)
-                    end
+                    -- Calculamos la dirección basándonos en la cámara y el movimiento del jugador
+                    local direction = camera.CFrame.Rotation * Vector3.new(moveDir.X, 0, moveDir.Z)
+                    bv.Velocity = direction.Unit * state.flySpeed
                 else
-                    bv.Velocity = Vector3.new(0, 0.1, 0) -- Flotar estático
+                    bv.Velocity = Vector3.new(0, 0, 0) -- Se detiene en seco si sueltas el control
                 end
                 RunService.RenderStepped:Wait()
             end
-            bv:Destroy()
-            bg:Destroy()
-            if hum then hum.PlatformStand = false end
+            if bv then bv:Destroy() end
+            if bg then bg:Destroy() end
+            hum.PlatformStand = false
         end)
     end
 end)
 
-fMov:AddSlider("VELOCIDAD VUELO", 10, 500, 50, function(v)
+fMov:AddSlider("VELOCIDAD VUELO", 10, 1000, 50, function(v)
     state.flySpeed = v
 end)
 
@@ -71,8 +63,10 @@ fMov:AddButton("NOCLIP (ATRAVESAR)", function()
     end)
 end)
 
-fMov:AddSlider("WALKSPEED", 16, 300, 16, function(v)
+fMov:AddSlider("VELOCIDAD CAMINAR", 16, 500, 16, function(v)
     if player.Character and player.Character:FindFirstChild("Humanoid") then 
         player.Character.Humanoid.WalkSpeed = v 
     end
 end)
+
+hud:Notify("¡Control de Vuelo Activado! 🚀", 4)
