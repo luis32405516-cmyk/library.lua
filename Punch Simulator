@@ -1,49 +1,72 @@
 local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2?v=" .. tick()))()
-local hud = RainbowUI:CreateWindow(240, 420)
+local hud = RainbowUI:CreateWindow(240, 450)
 
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
+local camera = workspace.CurrentCamera
 
-local state = { fly = false, noclip = false, speed = 16 }
+local state = { fly = false, noclip = false, flySpeed = 50 }
 
--- CARPETA AJUSTES
 local fMov = hud:AddFolder("AJUSTES PERSONAJE ⚙️")
 
--- BOTÓN FLY (VOLAR)
+-- Lógica Fly mejorada (Normal como caminar)
 fMov:AddButton("VOLAR (FLY)", function()
     state.fly = not state.fly
-    local bodyVel = character.PrimaryPart:FindFirstChild("FlyVel") or Instance.new("BodyVelocity", character.PrimaryPart)
-    bodyVel.Name = "FlyVel"
-    bodyVel.MaxForce = state.fly and Vector3.new(1e6, 1e6, 1e6) or Vector3.new(0,0,0)
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
     
+    local bg = root:FindFirstChild("FlyGyro") or Instance.new("BodyGyro", root)
+    local bv = root:FindFirstChild("FlyVel") or Instance.new("BodyVelocity", root)
+    
+    bg.Name = "FlyGyro"
+    bv.Name = "FlyVel"
+    
+    if state.fly then
+        bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        bg.P = 12000
+        bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    else
+        bg:Destroy()
+        bv:Destroy()
+        character.Humanoid.PlatformStand = false
+    end
+
     task.spawn(function()
         while state.fly do
-            bodyVel.Velocity = workspace.CurrentCamera.CFrame.LookVector * 50
-            task.wait()
-        end
-        bodyVel:Destroy()
-    end)
-end)
-
--- BOTÓN NOCLIP (ATRAVESAR)
-fMov:AddButton("NOCLIP (ATRAVESAR)", function()
-    state.noclip = not state.noclip
-    game:GetService("RunService").Stepped:Connect(function()
-        if state.noclip then
-            for _, part in pairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then part.CanCollide = false end
+            RunService.RenderStepped:Wait()
+            character.Humanoid.PlatformStand = true
+            bg.CFrame = camera.CFrame
+            
+            -- Detectar movimiento del joystick/teclado
+            local moveDir = character.Humanoid.MoveDirection
+            bv.Velocity = moveDir * state.flySpeed
+            
+            -- Si no te mueves, te quedas estático en el aire
+            if moveDir.Magnitude == 0 then
+                bv.Velocity = Vector3.new(0, 0, 0)
             end
         end
     end)
 end)
 
-fMov:AddSlider("VELOCIDAD", 16, 300, 16, function(v)
-    if character:FindFirstChildOfClass("Humanoid") then
-        character:FindFirstChildOfClass("Humanoid").WalkSpeed = v
-    end
+-- Slider para la velocidad del vuelo
+fMov:AddSlider("VELOCIDAD VUELO", 10, 300, 50, function(v)
+    state.flySpeed = v
 end)
 
-fMov:AddSlider("SALTO", 50, 500, 50, function(v)
-    local h = character:FindFirstChildOfClass("Humanoid")
-    if h then h.JumpPower = v h.UseJumpPower = true end
+fMov:AddButton("NOCLIP (ATRAVESAR)", function()
+    state.noclip = not state.noclip
+    RunService.Stepped:Connect(function()
+        if state.noclip then
+            for _, p in pairs(character:GetDescendants()) do
+                if p:IsA("BasePart") then p.CanCollide = false end
+            end
+        end
+    end)
 end)
+
+fMov:AddSlider("WALKSPEED", 16, 300, 16, function(v)
+    if character:FindFirstChild("Humanoid") then character.Humanoid.WalkSpeed = v end
+end)
+
+hud:Notify("Fly y Sliders configurados ✅", 3)
