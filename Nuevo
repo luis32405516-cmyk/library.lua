@@ -1,0 +1,142 @@
+-- Librería creada por Gemini para LUIS (Premium Edition)
+local Library = {}
+Library.__index = Library
+
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+function Library:CreateWindow(title)
+    local sg = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
+    sg.Name = "LuisPremiumUI"
+    sg.ResetOnSpawn = false
+
+    local main = Instance.new("Frame", sg)
+    main.Size = UDim2.fromOffset(250, 35)
+    main.Position = UDim2.new(0.5, -125, 0.4, -100)
+    main.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    main.BorderSizePixel = 0
+    main.ClipsDescendants = true
+    
+    local corner = Instance.new("UICorner", main)
+    
+    local topBar = Instance.new("Frame", main)
+    topBar.Size = UDim2.new(1, 0, 0, 35)
+    topBar.BackgroundTransparency = 1
+
+    local titleLabel = Instance.new("TextLabel", topBar)
+    titleLabel.Size = UDim2.new(1, -40, 1, 0)
+    titleLabel.Position = UDim2.fromOffset(10, 0)
+    titleLabel.Text = title or "LUIS HUB v4"
+    titleLabel.TextColor3 = Color3.new(1, 1, 1)
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 14
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local container = Instance.new("ScrollingFrame", main)
+    container.Size = UDim2.new(1, -10, 0, 350)
+    container.Position = UDim2.fromOffset(5, 40)
+    container.BackgroundTransparency = 1
+    container.ScrollBarThickness = 2
+    container.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+    local layout = Instance.new("UIListLayout", container)
+    layout.Padding = UDim.new(0, 5)
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+    -- Arrastrar (Draggable)
+    local dragging, dragInput, dragStart, startPos
+    topBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true dragStart = input.Position startPos = main.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
+
+    -- Botón de minimizar
+    local toggleBtn = Instance.new("TextButton", topBar)
+    toggleBtn.Size = UDim2.fromOffset(30, 30)
+    toggleBtn.Position = UDim2.new(1, -35, 0, 2)
+    toggleBtn.Text = "-"
+    toggleBtn.TextColor3 = Color3.new(1,1,1)
+    toggleBtn.BackgroundTransparency = 1
+    
+    local open = false
+    toggleBtn.MouseButton1Click:Connect(function()
+        open = not open
+        TweenService:Create(main, TweenInfo.new(0.3), {Size = open and UDim2.fromOffset(250, 400) or UDim2.fromOffset(250, 35)}):Play()
+    end)
+
+    local api = {sg = sg, container = container}
+
+    function api:AddButton(text, callback)
+        local btn = Instance.new("TextButton", container)
+        btn.Size = UDim2.new(0.95, 0, 0, 30)
+        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+        btn.Text = text
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 12
+        Instance.new("UICorner", btn)
+        btn.MouseButton1Click:Connect(callback)
+    end
+
+    function api:AddSlider(text, min, max, def, callback)
+        local frame = Instance.new("Frame", container)
+        frame.Size = UDim2.new(0.95, 0, 0, 45)
+        frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+        Instance.new("UICorner", frame)
+        
+        local label = Instance.new("TextLabel", frame)
+        label.Size = UDim2.new(1, 0, 0, 20)
+        label.Text = text .. ": " .. def
+        label.TextColor3 = Color3.new(0.8, 0.8, 0.8)
+        label.BackgroundTransparency = 1
+        label.Font = Enum.Font.Gotham
+
+        local bar = Instance.new("Frame", frame)
+        bar.Size = UDim2.new(0.8, 0, 0, 4)
+        bar.Position = UDim2.new(0.1, 0, 0.7, 0)
+        bar.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+
+        local fill = Instance.new("Frame", bar)
+        fill.Size = UDim2.new((def-min)/(max-min), 0, 1, 0)
+        fill.BackgroundColor3 = Color3.fromRGB(70, 130, 255)
+        
+        local s_dragging = false
+        local function update()
+            local input = UserInputService:GetMouseLocation().X
+            local ratio = math.clamp((input - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+            local val = math.floor(min + (max - min) * ratio)
+            fill.Size = UDim2.new(ratio, 0, 1, 0)
+            label.Text = text .. ": " .. val
+            callback(val)
+        end
+        frame.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then s_dragging = true update() end end)
+        UserInputService.InputChanged:Connect(function(i) if s_dragging and i.UserInputType == Enum.UserInputType.MouseMovement then update() end end)
+        UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then s_dragging = false end end)
+    end
+
+    function api:Notify(msg)
+        local n = Instance.new("TextLabel", sg)
+        n.Size = UDim2.fromOffset(200, 30)
+        n.Position = UDim2.new(0.5, -100, 0.9, 0)
+        n.BackgroundColor3 = Color3.new(0,0,0)
+        n.TextColor3 = Color3.new(1,1,1)
+        n.Text = msg
+        Instance.new("UICorner", n)
+        TweenService:Create(n, TweenInfo.new(0.5), {Position = UDim2.new(0.5, -100, 0.8, 0)}):Play()
+        task.wait(2)
+        n:Destroy()
+    end
+
+    return api
+end
+
+return Library
