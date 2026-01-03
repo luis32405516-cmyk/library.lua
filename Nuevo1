@@ -1,5 +1,5 @@
 -- Cargamos la librería premium
-local LuisLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/TuUsuario/TuRepo/main/LuisV4.lua"))()
+local LuisLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Nuevo"))()
 local menu = LuisLib:CreateWindow("😈 LUIS PREMIUM V4")
 
 -- [ LOGICA CORE FLY FLEW V3 ]
