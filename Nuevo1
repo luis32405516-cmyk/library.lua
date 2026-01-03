@@ -1,6 +1,8 @@
 --[[
-    LUIS PRESTIGE V5 - EXCLUSIVE EDITION
-    100% Original | Sin dependencias externas | Mobile & PC
+    LUIS PRESTIGE V7 - NEON EDITION
+    + Diseño Cyan Neon (UIStroke)
+    + Fly por CFrame (Anti-Bloqueo)
+    + Sliders Táctiles Corregidos
 ]]
 
 local UIS = game:GetService("UserInputService")
@@ -8,177 +10,159 @@ local RS = game:GetService("RunService")
 local TS = game:GetService("TweenService")
 local LP = game:GetService("Players").LocalPlayer
 
--- Configuración de Colores Premium
-local Theme = {
-    Main = Color3.fromRGB(15, 15, 20),
-    Accent = Color3.fromRGB(100, 100, 255),
-    Text = Color3.fromRGB(255, 255, 255),
-    Folder = Color3.fromRGB(25, 25, 35)
-}
-
--- Variables de Estado
 local State = {
-    Flying = false, FlySpeed = 70, 
-    Noclip = false, WalkSpeed = 16, 
-    JumpPower = 50, Vel = Vector3.zero
+    Flying = false, FlySpeed = 2, 
+    Noclip = false, WalkSpeed = 16
 }
 
-local Char, Hum, Root, BV, BG, FlyConn
+local Char, Hum, Root
 
--- Notificaciones Toast Originales
+-- Notificación Estilo Neón
 local function Notify(txt)
     local sg = LP.PlayerGui:FindFirstChild("L_Notif") or Instance.new("ScreenGui", LP.PlayerGui)
     sg.Name = "L_Notif"
-    local frame = Instance.new("TextLabel", sg)
-    frame.Size = UDim2.fromOffset(200, 35)
-    frame.Position = UDim2.new(0.5, -100, -0.1, 0)
-    frame.BackgroundColor3 = Theme.Main
-    frame.TextColor3 = Theme.Text
-    frame.Text = "✨ " .. txt
-    frame.Font = Enum.Font.GothamBold
-    Instance.new("UICorner", frame)
-    Instance.new("UIStroke", frame).Color = Theme.Accent
-    TS:Create(frame, TweenInfo.new(0.4), {Position = UDim2.new(0.5, -100, 0.05, 0)}):Play()
-    task.delay(2, function()
-        TS:Create(frame, TweenInfo.new(0.4), {Position = UDim2.new(0.5, -100, -0.1, 0)}):Play()
-        task.wait(0.5) frame:Destroy()
-    end)
+    local f = Instance.new("TextLabel", sg)
+    f.Size = UDim2.fromOffset(220, 35)
+    f.Position = UDim2.new(0.5, -110, 0.05, 0)
+    f.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+    f.TextColor3 = Color3.fromRGB(0, 255, 255)
+    f.Text = "⚡ " .. txt
+    f.Font = Enum.Font.GothamBold
+    local s = Instance.new("UIStroke", f)
+    s.Color = Color3.fromRGB(0, 255, 255)
+    s.Thickness = 2
+    Instance.new("UICorner", f)
+    task.delay(2.5, function() f:Destroy() end)
 end
 
--- Lógica de Vuelo Prestige (Original)
-local function FlightLogic(dt)
-    if not State.Flying or not Root then return end
-    local Cam = workspace.CurrentCamera
-    local Move = Hum.MoveDirection
-    local Dir = Vector3.zero
-
-    if Move.Magnitude > 0 then
-        -- Cálculo de dirección vectorial avanzado
-        Dir = (Cam.CFrame.LookVector * (Move.Z < 0 and -1 or Move.Z > 0 and 1 or 0) * -1) + 
-              (Cam.CFrame.RightVector * (Move.X > 0 and 1 or Move.X < 0 and -1 or 0))
+-- Lógica de Vuelo CFrame (Efectiva 100%)
+RS.RenderStepped:Connect(function()
+    if State.Flying and Root and Hum then
+        local Cam = workspace.CurrentCamera
+        local Move = Hum.MoveDirection
+        if Move.Magnitude > 0 then
+            local camDir = Cam.CFrame:VectorToWorldSpace(Vector3.new(Move.X, 0, Move.Z))
+            Root.CFrame = Root.CFrame + (camDir * State.FlySpeed)
+        end
+        Root.Velocity = Vector3.zero
     end
+end)
 
-    State.Vel = State.Vel:Lerp(Dir * State.FlySpeed, math.clamp(10 * dt, 0, 1))
-    BV.Velocity = State.Vel
-    BG.CFrame = Cam.CFrame
-end
+-- INTERFAZ NEÓN
+local sg = Instance.new("ScreenGui", LP.PlayerGui)
+sg.Name = "LuisNeonUI"
 
--- Creación de Interfaz desde cero
-local ScreenGui = Instance.new("ScreenGui", LP.PlayerGui)
-ScreenGui.Name = "LuisPrestigeUI"
-ScreenGui.ResetOnSpawn = false
-
-local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.fromOffset(230, 35)
-Main.Position = UDim2.fromOffset(50, 50)
-Main.BackgroundColor3 = Theme.Main
-Main.BorderSizePixel = 0
+local Main = Instance.new("Frame", sg)
+Main.Size = UDim2.fromOffset(230, 38)
+Main.Position = UDim2.new(0.5, -115, 0.3, 0)
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 Main.Active = true
 Main.Draggable = true
+local M_Stroke = Instance.new("UIStroke", Main)
+M_Stroke.Color = Color3.fromRGB(0, 255, 255)
+M_Stroke.Thickness = 2
 Instance.new("UICorner", Main)
 
 local Title = Instance.new("TextLabel", Main)
 Title.Size = UDim2.new(1, -40, 0, 35)
 Title.Position = UDim2.fromOffset(10, 0)
-Title.Text = "LUIS PRESTIGE V5"
-Title.TextColor3 = Theme.Text
+Title.Text = "LUIS PRESTIGE V7"
+Title.TextColor3 = Color3.fromRGB(0, 255, 255)
 Title.Font = Enum.Font.GothamBold
 Title.BackgroundTransparency = 1
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 local Content = Instance.new("ScrollingFrame", Main)
-Content.Size = UDim2.new(1, -10, 0, 300)
-Content.Position = UDim2.fromOffset(5, 40)
+Content.Size = UDim2.new(1, -10, 0, 280)
+Content.Position = UDim2.fromOffset(5, 45)
 Content.BackgroundTransparency = 1
-Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Content.ScrollBarThickness = 0
 Content.Visible = false
+Content.ScrollBarThickness = 0
+Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
 local Layout = Instance.new("UIListLayout", Content)
-Layout.Padding = UDim.new(0, 5)
+Layout.Padding = UDim.new(0, 8)
 
--- Botón Cerrar/Abrir
 local Toggle = Instance.new("TextButton", Main)
 Toggle.Size = UDim2.fromOffset(30, 30)
-Toggle.Position = UDim2.new(1, -35, 0, 2)
+Toggle.Position = UDim2.new(1, -35, 0, 4)
 Toggle.Text = "+"
-Toggle.BackgroundColor3 = Theme.Folder
-Toggle.TextColor3 = Theme.Text
+Toggle.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+Toggle.TextColor3 = Color3.fromRGB(0, 255, 255)
 Instance.new("UICorner", Toggle)
 
 Toggle.MouseButton1Click:Connect(function()
     Content.Visible = not Content.Visible
-    Main.Size = Content.Visible and UDim2.fromOffset(230, 350) or UDim2.fromOffset(230, 35)
+    Main.Size = Content.Visible and UDim2.fromOffset(230, 340) or UDim2.fromOffset(230, 38)
     Toggle.Text = Content.Visible and "-" or "+"
 end)
 
--- Sistema de Componentes (Botones y Sliders)
+-- Componentes Neón (Botones y Sliders)
 local function AddButton(txt, cb)
     local b = Instance.new("TextButton", Content)
-    b.Size = UDim2.new(1, 0, 0, 30)
-    b.BackgroundColor3 = Theme.Folder
+    b.Size = UDim2.new(1, 0, 0, 35)
+    b.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
     b.Text = txt
-    b.TextColor3 = Theme.Text
+    b.TextColor3 = Color3.fromRGB(200, 255, 255)
     b.Font = Enum.Font.Gotham
+    local s = Instance.new("UIStroke", b)
+    s.Color = Color3.fromRGB(0, 255, 255)
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     Instance.new("UICorner", b)
     b.MouseButton1Click:Connect(cb)
 end
 
 local function AddSlider(txt, min, max, def, cb)
     local f = Instance.new("Frame", Content)
-    f.Size = UDim2.new(1, 0, 0, 40)
-    f.BackgroundColor3 = Theme.Folder
+    f.Size = UDim2.new(1, 0, 0, 45)
+    f.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
     Instance.new("UICorner", f)
+    local s = Instance.new("UIStroke", f)
+    s.Color = Color3.fromRGB(0, 255, 255)
+    s.Transparency = 0.5
+
     local l = Instance.new("TextLabel", f)
     l.Size = UDim2.new(1, 0, 0, 20)
     l.Text = txt .. ": " .. def
-    l.TextColor3 = Theme.Text
+    l.TextColor3 = Color3.new(1, 1, 1)
     l.BackgroundTransparency = 1
-    local b = Instance.new("Frame", f)
-    b.Size = UDim2.new(0.8, 0, 0, 4)
-    b.Position = UDim2.new(0.1, 0, 0.7, 0)
-    b.BackgroundColor3 = Color3.new(0,0,0)
-    local fill = Instance.new("Frame", b)
+
+    local bar = Instance.new("Frame", f)
+    bar.Size = UDim2.new(0.8, 0, 0, 4)
+    bar.Position = UDim2.new(0.1, 0, 0.7, 0)
+    bar.BackgroundColor3 = Color3.new(0, 0, 0)
+
+    local fill = Instance.new("Frame", bar)
     fill.Size = UDim2.new((def-min)/(max-min), 0, 1, 0)
-    fill.BackgroundColor3 = Theme.Accent
-    
+    fill.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+    Instance.new("UIStroke", fill).Color = Color3.fromRGB(0, 255, 255)
+
     local move = false
-    f.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then move = true end end)
-    UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then move = false end end)
-    UIS.InputChanged:Connect(function(i)
-        if move and i.UserInputType == Enum.UserInputType.MouseMovement then
-            local r = math.clamp((i.Position.X - b.AbsolutePosition.X) / b.AbsoluteSize.X, 0, 1)
-            local v = math.floor(min + (max - min) * r)
-            fill.Size = UDim2.new(r, 0, 1, 0)
-            l.Text = txt .. ": " .. v
-            cb(v)
-        end
-    end)
+    local function update(input)
+        local r = math.clamp((input.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+        local v = math.floor(min + (max - min) * r)
+        fill.Size = UDim2.new(r, 0, 1, 0)
+        l.Text = txt .. ": " .. v
+        cb(v)
+    end
+    f.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then move = true update(i) end end)
+    UIS.InputChanged:Connect(function(i) if move and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then update(i) end end)
+    UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then move = false end end)
 end
 
--- [ ACCIONES ]
-AddButton("🚀 FLY MODE", function()
+-- ACCIONES FINALES
+AddButton("🚀 ACTIVAR FLY", function()
     State.Flying = not State.Flying
     Char = LP.Character; Hum = Char:FindFirstChildOfClass("Humanoid"); Root = Char:FindFirstChild("HumanoidRootPart")
-    if State.Flying then
-        BV = Instance.new("BodyVelocity", Root); BV.MaxForce = Vector3.new(1e6,1e6,1e6)
-        BG = Instance.new("BodyGyro", Root); BG.MaxTorque = Vector3.new(1e6,1e6,1e6); BG.P = 50000
-        Hum.PlatformStand = true
-        FlyConn = RS.Heartbeat:Connect(FlightLogic)
-        Notify("FLY ACTIVADO")
-    else
-        if FlyConn then FlyConn:Disconnect() end
-        if BV then BV:Destroy() end; if BG then BG:Destroy() end
-        Hum.PlatformStand = false; State.Vel = Vector3.zero
-        Notify("FLY DESACTIVADO")
-    end
+    Hum.PlatformStand = State.Flying
+    Notify(State.Flying and "FLY ACTIVADO 🚀" or "FLY DESACTIVADO 🛑")
 end)
 
-AddSlider("VELOCIDAD FLY", 10, 500, 70, function(v) State.FlySpeed = v end)
+AddSlider("VELOCIDAD FLY", 1, 15, 2, function(v) State.FlySpeed = v end)
 
-AddButton("👻 NOCLIP", function()
+AddButton("👻 NOCLIP MODE", function()
     State.Noclip = not State.Noclip
-    Notify(State.Noclip and "NOCLIP ON" or "NOCLIP OFF")
+    Notify(State.Noclip and "NOCLIP ON 👻" or "NOCLIP OFF 🧱")
     RS.Stepped:Connect(function()
         if State.Noclip and LP.Character then
             for _, p in pairs(LP.Character:GetDescendants()) do
@@ -188,7 +172,7 @@ AddButton("👻 NOCLIP", function()
     end)
 end)
 
-AddSlider("VELOCIDAD", 16, 500, 16, function(v) if Hum then Hum.WalkSpeed = v end end)
+AddSlider("CAMINAR", 16, 500, 16, function(v) if Hum then Hum.WalkSpeed = v end end)
 AddSlider("SALTO", 50, 600, 50, function(v) if Hum then Hum.JumpPower = v; Hum.UseJumpPower = true end end)
 
-Notify("SISTEMA LUIS V5 CARGADO ✅")
+Notify("LUIS PRESTIGE V7 CARGADO ✅")
