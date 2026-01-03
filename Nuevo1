@@ -1,95 +1,194 @@
--- Cargamos la librería premium
-local LuisLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Nuevo"))()
-local menu = LuisLib:CreateWindow("😈 LUIS PREMIUM V4")
+--[[
+    LUIS PRESTIGE V5 - EXCLUSIVE EDITION
+    100% Original | Sin dependencias externas | Mobile & PC
+]]
 
--- [ LOGICA CORE FLY FLEW V3 ]
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local player = Players.LocalPlayer
-local camera = workspace.CurrentCamera
-local character, humanoid, root
+local UIS = game:GetService("UserInputService")
+local RS = game:GetService("RunService")
+local TS = game:GetService("TweenService")
+local LP = game:GetService("Players").LocalPlayer
 
-local flying = false
-local bv, bg, flyConn
-local currentVel = Vector3.zero
-local flySpeed = 70
-local easing = 6
+-- Configuración de Colores Premium
+local Theme = {
+    Main = Color3.fromRGB(15, 15, 20),
+    Accent = Color3.fromRGB(100, 100, 255),
+    Text = Color3.fromRGB(255, 255, 255),
+    Folder = Color3.fromRGB(25, 25, 35)
+}
 
-local function refresh(char)
-    character = char
-    humanoid = char:WaitForChild("Humanoid")
-    root = char:WaitForChild("HumanoidRootPart")
+-- Variables de Estado
+local State = {
+    Flying = false, FlySpeed = 70, 
+    Noclip = false, WalkSpeed = 16, 
+    JumpPower = 50, Vel = Vector3.zero
+}
+
+local Char, Hum, Root, BV, BG, FlyConn
+
+-- Notificaciones Toast Originales
+local function Notify(txt)
+    local sg = LP.PlayerGui:FindFirstChild("L_Notif") or Instance.new("ScreenGui", LP.PlayerGui)
+    sg.Name = "L_Notif"
+    local frame = Instance.new("TextLabel", sg)
+    frame.Size = UDim2.fromOffset(200, 35)
+    frame.Position = UDim2.new(0.5, -100, -0.1, 0)
+    frame.BackgroundColor3 = Theme.Main
+    frame.TextColor3 = Theme.Text
+    frame.Text = "✨ " .. txt
+    frame.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", frame)
+    Instance.new("UIStroke", frame).Color = Theme.Accent
+    TS:Create(frame, TweenInfo.new(0.4), {Position = UDim2.new(0.5, -100, 0.05, 0)}):Play()
+    task.delay(2, function()
+        TS:Create(frame, TweenInfo.new(0.4), {Position = UDim2.new(0.5, -100, -0.1, 0)}):Play()
+        task.wait(0.5) frame:Destroy()
+    end)
 end
-player.CharacterAdded:Connect(refresh)
-refresh(player.Character or player.CharacterAdded:Wait())
 
-local function flight(dt)
-    if not flying or not root then return end
-    local dir = Vector3.zero
-    local cam = camera.CFrame
-    local moveVector = humanoid.MoveDirection
+-- Lógica de Vuelo Prestige (Original)
+local function FlightLogic(dt)
+    if not State.Flying or not Root then return end
+    local Cam = workspace.CurrentCamera
+    local Move = Hum.MoveDirection
+    local Dir = Vector3.zero
 
-    -- Entrada PC
-    if UserInputService.KeyboardEnabled then
-        if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir += cam.LookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= cam.LookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= cam.RightVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += cam.RightVector end
+    if Move.Magnitude > 0 then
+        -- Cálculo de dirección vectorial avanzado
+        Dir = (Cam.CFrame.LookVector * (Move.Z < 0 and -1 or Move.Z > 0 and 1 or 0) * -1) + 
+              (Cam.CFrame.RightVector * (Move.X > 0 and 1 or Move.X < 0 and -1 or 0))
     end
 
-    local total = dir + moveVector
-    if total.Magnitude > 0 then total = total.Unit * flySpeed end
-
-    currentVel = currentVel:Lerp(total, math.clamp(easing * dt, 0, 1))
-    if bv then bv.Velocity = currentVel end
-    if bg then bg.CFrame = CFrame.new(Vector3.zero, currentVel.Magnitude > 0 and currentVel.Unit or cam.LookVector) end
+    State.Vel = State.Vel:Lerp(Dir * State.FlySpeed, math.clamp(10 * dt, 0, 1))
+    BV.Velocity = State.Vel
+    BG.CFrame = Cam.CFrame
 end
 
--- [ BOTONES Y SLIDERS ]
+-- Creación de Interfaz desde cero
+local ScreenGui = Instance.new("ScreenGui", LP.PlayerGui)
+ScreenGui.Name = "LuisPrestigeUI"
+ScreenGui.ResetOnSpawn = false
 
-menu:AddButton("🚀 ACTIVAR FLY (V3)", function()
-    flying = not flying
-    if flying then
-        bv = Instance.new("BodyVelocity", root)
-        bv.MaxForce = Vector3.new(1e5,1e5,1e5)
-        bg = Instance.new("BodyGyro", root)
-        bg.MaxTorque = Vector3.new(1e5,1e5,1e5)
-        bg.P = 9e4
-        humanoid.PlatformStand = true
-        flyConn = RunService.Heartbeat:Connect(flight)
-        menu:Notify("FLY ON")
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.fromOffset(230, 35)
+Main.Position = UDim2.fromOffset(50, 50)
+Main.BackgroundColor3 = Theme.Main
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
+Instance.new("UICorner", Main)
+
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1, -40, 0, 35)
+Title.Position = UDim2.fromOffset(10, 0)
+Title.Text = "LUIS PRESTIGE V5"
+Title.TextColor3 = Theme.Text
+Title.Font = Enum.Font.GothamBold
+Title.BackgroundTransparency = 1
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local Content = Instance.new("ScrollingFrame", Main)
+Content.Size = UDim2.new(1, -10, 0, 300)
+Content.Position = UDim2.fromOffset(5, 40)
+Content.BackgroundTransparency = 1
+Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Content.ScrollBarThickness = 0
+Content.Visible = false
+
+local Layout = Instance.new("UIListLayout", Content)
+Layout.Padding = UDim.new(0, 5)
+
+-- Botón Cerrar/Abrir
+local Toggle = Instance.new("TextButton", Main)
+Toggle.Size = UDim2.fromOffset(30, 30)
+Toggle.Position = UDim2.new(1, -35, 0, 2)
+Toggle.Text = "+"
+Toggle.BackgroundColor3 = Theme.Folder
+Toggle.TextColor3 = Theme.Text
+Instance.new("UICorner", Toggle)
+
+Toggle.MouseButton1Click:Connect(function()
+    Content.Visible = not Content.Visible
+    Main.Size = Content.Visible and UDim2.fromOffset(230, 350) or UDim2.fromOffset(230, 35)
+    Toggle.Text = Content.Visible and "-" or "+"
+end)
+
+-- Sistema de Componentes (Botones y Sliders)
+local function AddButton(txt, cb)
+    local b = Instance.new("TextButton", Content)
+    b.Size = UDim2.new(1, 0, 0, 30)
+    b.BackgroundColor3 = Theme.Folder
+    b.Text = txt
+    b.TextColor3 = Theme.Text
+    b.Font = Enum.Font.Gotham
+    Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(cb)
+end
+
+local function AddSlider(txt, min, max, def, cb)
+    local f = Instance.new("Frame", Content)
+    f.Size = UDim2.new(1, 0, 0, 40)
+    f.BackgroundColor3 = Theme.Folder
+    Instance.new("UICorner", f)
+    local l = Instance.new("TextLabel", f)
+    l.Size = UDim2.new(1, 0, 0, 20)
+    l.Text = txt .. ": " .. def
+    l.TextColor3 = Theme.Text
+    l.BackgroundTransparency = 1
+    local b = Instance.new("Frame", f)
+    b.Size = UDim2.new(0.8, 0, 0, 4)
+    b.Position = UDim2.new(0.1, 0, 0.7, 0)
+    b.BackgroundColor3 = Color3.new(0,0,0)
+    local fill = Instance.new("Frame", b)
+    fill.Size = UDim2.new((def-min)/(max-min), 0, 1, 0)
+    fill.BackgroundColor3 = Theme.Accent
+    
+    local move = false
+    f.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then move = true end end)
+    UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then move = false end end)
+    UIS.InputChanged:Connect(function(i)
+        if move and i.UserInputType == Enum.UserInputType.MouseMovement then
+            local r = math.clamp((i.Position.X - b.AbsolutePosition.X) / b.AbsoluteSize.X, 0, 1)
+            local v = math.floor(min + (max - min) * r)
+            fill.Size = UDim2.new(r, 0, 1, 0)
+            l.Text = txt .. ": " .. v
+            cb(v)
+        end
+    end)
+end
+
+-- [ ACCIONES ]
+AddButton("🚀 FLY MODE", function()
+    State.Flying = not State.Flying
+    Char = LP.Character; Hum = Char:FindFirstChildOfClass("Humanoid"); Root = Char:FindFirstChild("HumanoidRootPart")
+    if State.Flying then
+        BV = Instance.new("BodyVelocity", Root); BV.MaxForce = Vector3.new(1e6,1e6,1e6)
+        BG = Instance.new("BodyGyro", Root); BG.MaxTorque = Vector3.new(1e6,1e6,1e6); BG.P = 50000
+        Hum.PlatformStand = true
+        FlyConn = RS.Heartbeat:Connect(FlightLogic)
+        Notify("FLY ACTIVADO")
     else
-        if flyConn then flyConn:Disconnect() end
-        if bv then bv:Destroy() end
-        if bg then bg:Destroy() end
-        humanoid.PlatformStand = false
-        currentVel = Vector3.zero
-        menu:Notify("FLY OFF")
+        if FlyConn then FlyConn:Disconnect() end
+        if BV then BV:Destroy() end; if BG then BG:Destroy() end
+        Hum.PlatformStand = false; State.Vel = Vector3.zero
+        Notify("FLY DESACTIVADO")
     end
 end)
 
-menu:AddSlider("VELOCIDAD VUELO", 10, 400, 70, function(v)
-    flySpeed = v
-end)
+AddSlider("VELOCIDAD FLY", 10, 500, 70, function(v) State.FlySpeed = v end)
 
-menu:AddButton("👻 NOCLIP (ATRAVESAR)", function()
-    _G.nc = not _G.nc
-    menu:Notify(_G.nc and "NOCLIP ON" or "NOCLIP OFF")
-    RunService.Stepped:Connect(function()
-        if _G.nc and player.Character then
-            for _, v in pairs(player.Character:GetDescendants()) do
-                if v:IsA("BasePart") then v.CanCollide = false end
+AddButton("👻 NOCLIP", function()
+    State.Noclip = not State.Noclip
+    Notify(State.Noclip and "NOCLIP ON" or "NOCLIP OFF")
+    RS.Stepped:Connect(function()
+        if State.Noclip and LP.Character then
+            for _, p in pairs(LP.Character:GetDescendants()) do
+                if p:IsA("BasePart") then p.CanCollide = false end
             end
         end
     end)
 end)
 
-menu:AddSlider("VELOCIDAD CORRER", 16, 500, 16, function(v)
-    humanoid.WalkSpeed = v
-end)
+AddSlider("VELOCIDAD", 16, 500, 16, function(v) if Hum then Hum.WalkSpeed = v end end)
+AddSlider("SALTO", 50, 600, 50, function(v) if Hum then Hum.JumpPower = v; Hum.UseJumpPower = true end end)
 
-menu:AddSlider("FUERZA SALTO", 50, 600, 50, function(v)
-    humanoid.JumpPower = v
-    humanoid.UseJumpPower = true
-end)
+Notify("SISTEMA LUIS V5 CARGADO ✅")
