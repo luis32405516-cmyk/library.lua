@@ -1,0 +1,95 @@
+-- Cargamos la librería premium
+local LuisLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/TuUsuario/TuRepo/main/LuisV4.lua"))()
+local menu = LuisLib:CreateWindow("😈 LUIS PREMIUM V4")
+
+-- [ LOGICA CORE FLY FLEW V3 ]
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local character, humanoid, root
+
+local flying = false
+local bv, bg, flyConn
+local currentVel = Vector3.zero
+local flySpeed = 70
+local easing = 6
+
+local function refresh(char)
+    character = char
+    humanoid = char:WaitForChild("Humanoid")
+    root = char:WaitForChild("HumanoidRootPart")
+end
+player.CharacterAdded:Connect(refresh)
+refresh(player.Character or player.CharacterAdded:Wait())
+
+local function flight(dt)
+    if not flying or not root then return end
+    local dir = Vector3.zero
+    local cam = camera.CFrame
+    local moveVector = humanoid.MoveDirection
+
+    -- Entrada PC
+    if UserInputService.KeyboardEnabled then
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir += cam.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir -= cam.LookVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then dir -= cam.RightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then dir += cam.RightVector end
+    end
+
+    local total = dir + moveVector
+    if total.Magnitude > 0 then total = total.Unit * flySpeed end
+
+    currentVel = currentVel:Lerp(total, math.clamp(easing * dt, 0, 1))
+    if bv then bv.Velocity = currentVel end
+    if bg then bg.CFrame = CFrame.new(Vector3.zero, currentVel.Magnitude > 0 and currentVel.Unit or cam.LookVector) end
+end
+
+-- [ BOTONES Y SLIDERS ]
+
+menu:AddButton("🚀 ACTIVAR FLY (V3)", function()
+    flying = not flying
+    if flying then
+        bv = Instance.new("BodyVelocity", root)
+        bv.MaxForce = Vector3.new(1e5,1e5,1e5)
+        bg = Instance.new("BodyGyro", root)
+        bg.MaxTorque = Vector3.new(1e5,1e5,1e5)
+        bg.P = 9e4
+        humanoid.PlatformStand = true
+        flyConn = RunService.Heartbeat:Connect(flight)
+        menu:Notify("FLY ON")
+    else
+        if flyConn then flyConn:Disconnect() end
+        if bv then bv:Destroy() end
+        if bg then bg:Destroy() end
+        humanoid.PlatformStand = false
+        currentVel = Vector3.zero
+        menu:Notify("FLY OFF")
+    end
+end)
+
+menu:AddSlider("VELOCIDAD VUELO", 10, 400, 70, function(v)
+    flySpeed = v
+end)
+
+menu:AddButton("👻 NOCLIP (ATRAVESAR)", function()
+    _G.nc = not _G.nc
+    menu:Notify(_G.nc and "NOCLIP ON" or "NOCLIP OFF")
+    RunService.Stepped:Connect(function()
+        if _G.nc and player.Character then
+            for _, v in pairs(player.Character:GetDescendants()) do
+                if v:IsA("BasePart") then v.CanCollide = false end
+            end
+        end
+    end)
+end)
+
+menu:AddSlider("VELOCIDAD CORRER", 16, 500, 16, function(v)
+    humanoid.WalkSpeed = v
+end)
+
+menu:AddSlider("FUERZA SALTO", 50, 600, 50, function(v)
+    humanoid.JumpPower = v
+    humanoid.UseJumpPower = true
+end)
