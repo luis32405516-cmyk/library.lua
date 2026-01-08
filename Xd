@@ -5,13 +5,13 @@ local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = game:GetService("Players").LocalPlayer
 
 -- [[ CONFIGURACIÓN ]]
-local MAIN_GAME_ID = 123456789 -- 🚩 Reemplaza con el ID de tu juego
+local MAIN_GAME_ID = 13457104744 -- 🚩 Reemplaza con el ID de tu juego
 
 -- [[ CARPETA SISTEMA ]]
 local fSys = hud:AddFolder("SISTEMA 🔄")
 
 fSys:AddButton("VOLVER AL JUEGO", function()
-    if MAIN_GAME_ID == 123456789 then
+    if MAIN_GAME_ID == 13457104744 then
         hud:Notify("⚠️ ID NO CONFIGURADO")
         return
     end
