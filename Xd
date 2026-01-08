@@ -1,33 +1,47 @@
+-- [[ PROTECCIÓN DE LLAMADAS ]]
+local function SecureCall(func)
+    local success, err = pcall(func)
+    if not success then return end
+end
+
+-- CARGA DE LIBRERÍA
 local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2"))()
 local hud = RainbowUI:CreateWindow(230, 200)
 
+-- OCULTAR INTERFAZ DEL SCANNER DEL MAPA
+task.spawn(function()
+    local pGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+    task.wait(0.5)
+    local ui = pGui:FindFirstChild("RainbowUI")
+    if ui then ui.Name = "Core_" .. math.random(1000, 9999) end
+end)
+
 local TeleportService = game:GetService("TeleportService")
 local LocalPlayer = game:GetService("Players").LocalPlayer
-
--- [[ CONFIGURACIÓN ]]
-local MAIN_GAME_ID = 13457104744 -- 🚩 Reemplaza con el ID de tu juego
+local MAIN_GAME_ID = 13457104744 -- ✅ ID Configurado
 
 -- [[ CARPETA SISTEMA ]]
 local fSys = hud:AddFolder("SISTEMA 🔄")
 
 fSys:AddButton("VOLVER AL JUEGO", function()
-    if MAIN_GAME_ID == 13457104744 then
-        hud:Notify("⚠️ ID NO CONFIGURADO")
-        return
-    end
-    hud:Notify("Teletransportando...")
-    TeleportService:Teleport(MAIN_GAME_ID, LocalPlayer)
+    SecureCall(function()
+        hud:Notify("Retornando al Mapa Principal...")
+        -- Salto limpio al ID proporcionado
+        TeleportService:Teleport(MAIN_GAME_ID, LocalPlayer)
+    end)
 end)
 
 fSys:AddButton("REJOIN", function()
-    hud:Notify("Reconectando...")
-    if #game:GetService("Players"):GetPlayers() <= 1 then
-        TeleportService:Teleport(game.PlaceId, LocalPlayer)
-    else
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
-    end
+    SecureCall(function()
+        hud:Notify("Reiniciando Instancia...")
+        if #game:GetService("Players"):GetPlayers() <= 1 then
+            TeleportService:Teleport(game.PlaceId, LocalPlayer)
+        else
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+        end
+    end)
 end)
 
 -- [[ CARPETA UBICACIONES ]]
 local fTp = hud:AddFolder("UBICACIONES 📍")
--- Espacio reservado para tus coordenadas futuras
+-- Aquí añadiremos los botones de teleport cuando me pases las coordenadas.
