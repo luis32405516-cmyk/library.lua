@@ -1,0 +1,33 @@
+local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2"))()
+local hud = RainbowUI:CreateWindow(230, 200)
+
+local TeleportService = game:GetService("TeleportService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+-- [[ CONFIGURACIÓN ]]
+local MAIN_GAME_ID = 123456789 -- 🚩 Reemplaza con el ID de tu juego
+
+-- [[ CARPETA SISTEMA ]]
+local fSys = hud:AddFolder("SISTEMA 🔄")
+
+fSys:AddButton("VOLVER AL JUEGO", function()
+    if MAIN_GAME_ID == 123456789 then
+        hud:Notify("⚠️ ID NO CONFIGURADO")
+        return
+    end
+    hud:Notify("Teletransportando...")
+    TeleportService:Teleport(MAIN_GAME_ID, LocalPlayer)
+end)
+
+fSys:AddButton("REJOIN", function()
+    hud:Notify("Reconectando...")
+    if #game:GetService("Players"):GetPlayers() <= 1 then
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    else
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+    end
+end)
+
+-- [[ CARPETA UBICACIONES ]]
+local fTp = hud:AddFolder("UBICACIONES 📍")
+-- Espacio reservado para tus coordenadas futuras
