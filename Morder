@@ -1,107 +1,129 @@
 local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2"))()
-local hud = RainbowUI:CreateWindow(230, 450) -- Aumenté la altura para los nuevos botones
+local hud = RainbowUI:CreateWindow(230, 450)
 
 local LocalPlayer = game:GetService("Players").LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
 
--- Variables de Control
-local noclipLoop, flyLoop = nil, nil
-local flySpeed = 50
-local walkflingEnabled = false
+-- [[ VARIABLES IY CORE ]]
+local flying = false
+local flySpeed = 1
+local noclipActive = false
+local infJumpActive = false
 
--- [[ FUNCIONES CORE RECONSTRUIDAS ]]
-
-local function ToggleNoclip(state)
-    if noclipLoop then noclipLoop:Disconnect() noclipLoop = nil end
-    if state then
-        noclipLoop = RunService.Stepped:Connect(function()
-            if LocalPlayer.Character then
-                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then part.CanCollide = false end
-                end
-            end
-        end)
-    end
+local function getRoot(char)
+    return char:FindFirstChild('HumanoidRootPart') or char:FindFirstChild('Torso') or char:FindFirstChild('UpperTorso')
 end
 
-local function ToggleFly(state)
-    if flyLoop then flyLoop:Disconnect() flyLoop = nil end
-    if not state then return end
+-- [[ 1. FLY IY (ADAPTADO PARA MÓVIL/WASD) ]]
+local function sFLY()
+    flying = true
+    local root = getRoot(LocalPlayer.Character)
+    local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     
-    flyLoop = RunService.Heartbeat:Connect(function(delta)
-        local char = LocalPlayer.Character
-        local root = char and char:FindFirstChild("HumanoidRootPart")
-        local hum = char and char:FindFirstChildWhichIsA("Humanoid")
-        
-        if root and hum then
-            root.Velocity = Vector3.new(0, 0.1, 0)
+    local BG = Instance.new('BodyGyro', root)
+    local BV = Instance.new('BodyVelocity', root)
+    
+    BG.P = 9e4
+    BG.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+    BG.cframe = root.CFrame
+    BV.velocity = Vector3.new(0, 0.1, 0)
+    BV.maxForce = Vector3.new(9e9, 9e9, 9e9)
+
+    task.spawn(function()
+        while flying do
+            RunService.RenderStepped:Wait()
+            if hum then hum.PlatformStand = true end
+            
+            -- En móvil, el MoveDirection del Humanoid responde al Joystick
             if hum.MoveDirection.Magnitude > 0 then
-                root.CFrame = root.CFrame + (hum.MoveDirection * flySpeed * delta)
+                BV.velocity = hum.MoveDirection * (flySpeed * 50)
+            else
+                BV.velocity = Vector3.new(0, 0, 0)
             end
+            BG.cframe = Camera.CFrame
         end
+        if BG then BG:Destroy() end
+        if BV then BV:Destroy() end
+        if hum then hum.PlatformStand = false end
     end)
 end
 
--- [[ CARPETAS NUEVAS (FLY, SPEED, NOCLIP, FLING) ]]
+-- [[ 2. ESP (DE INFINITE YIELD) ]]
+local function ApplyESP()
+    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "IY_ESP"
+            highlight.Parent = player.Character
+            highlight.FillColor = Color3.new(1, 0, 0)
+            highlight.OutlineColor = Color3.new(1, 1, 1)
+        end
+    end
+end
+
+-- [[ CONFIGURACIÓN DE CARPETAS ]]
 
 local fMov = hud:AddFolder("MOVIMIENTO ⚡")
 
-fMov:AddSlider("WalkSpeed", 16, 300, 16, function(v)
-    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
-    if hum then hum.WalkSpeed = v end
+fMov:AddButton("FLY (IY MOBILE) ✈️", function()
+    flying = not flying
+    if flying then sFLY() else flying = false end
+    hud:Notify(flying and "Fly ON" or "Fly OFF")
 end)
 
-local noclipActive = false
-fMov:AddButton("NOCLIP 👻", function()
-    noclipActive = not noclipActive
-    ToggleNoclip(noclipActive)
-    hud:Notify(noclipActive and "Noclip ON" or "Noclip OFF", 1)
-end)
-
-local flyActive = false
-fMov:AddButton("FLY ✈️", function()
-    flyActive = not flyActive
-    ToggleFly(flyActive)
-    hud:Notify(flyActive and "Fly ON" or "Fly OFF", 1)
-end)
-
-fMov:AddSlider("Fly Speed", 10, 500, 50, function(v)
+fMov:AddSlider("Fly Speed", 1, 10, 1, function(v)
     flySpeed = v
 end)
 
-local fComb = hud:AddFolder("COMBATE 💀")
-
-fComb:AddButton("WALK FLING 🌀", function()
-    walkflingEnabled = not walkflingEnabled
-    hud:Notify(walkflingEnabled and "Fling ACTIVADO" or "Fling DESACTIVADO", 2)
-    
-    if walkflingEnabled then
-        ToggleNoclip(true) -- Auto-noclip para el fling
-        task.spawn(function()
-            while walkflingEnabled do
-                local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                if root then
-                    local oldVel = root.Velocity
-                    root.Velocity = oldVel * 10000 + Vector3.new(0, 10000, 0)
-                    RunService.RenderStepped:Wait()
-                    if root then root.Velocity = oldVel end
-                    RunService.Stepped:Wait()
-                    if root then root.Velocity = oldVel + Vector3.new(0, 0.1, 0) end
+fMov:AddButton("NOCLIP 👻", function()
+    noclipActive = not noclipActive
+    if noclipActive then
+        _G.NoclipConn = RunService.Stepped:Connect(function()
+            if LocalPlayer.Character then
+                for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if v:IsA("BasePart") then v.CanCollide = false end
                 end
-                RunService.Heartbeat:Wait()
             end
-            if not noclipActive then ToggleNoclip(false) end
         end)
+    else
+        if _G.NoclipConn then _G.NoclipConn:Disconnect() end
+    end
+    hud:Notify("Noclip: " .. tostring(noclipActive))
+end)
+
+fMov:AddButton("INF JUMP 🦘", function()
+    infJumpActive = not infJumpActive
+    if infJumpActive then
+        _G.JumpConn = UserInputService.JumpRequest:Connect(function()
+            LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+        end)
+    else
+        if _G.JumpConn then _G.JumpConn:Disconnect() end
     end
 end)
 
--- [[ CARPETAS ORIGINALES (MANTENIDAS) ]]
+local fVis = hud:AddFolder("VISUALES 👁️")
+fVis:AddButton("PLAYER ESP", function()
+    ApplyESP()
+    hud:Notify("ESP Aplicado")
+end)
 
-local fObj = hud:AddFolder("OBJETOS 🗺️")
--- ... (Aquí va tu lógica de BUSCAR que ya tienes)
+local fComb = hud:AddFolder("COMBATE 💀")
+fComb:AddButton("WALK FLING 🌀", function()
+    _G.Wfling = not _G.Wfling
+    task.spawn(function()
+        while _G.Wfling do
+            local root = getRoot(LocalPlayer.Character)
+            if root then
+                root.Velocity = root.Velocity * 10000 + Vector3.new(0, 10000, 0)
+                RunService.RenderStepped:Wait()
+                if root then root.Velocity = Vector3.new(0, 0, 0) end
+            end
+            task.wait()
+        end
+    end)
+end)
 
-local fCheck = hud:AddFolder("CHECKPOINTS 🔙🔜")
--- ... (Aquí van tus botones de flechas que ya tienes)
-
-hud:Notify("SCRIPT CARGADO 😈", 3)
+hud:Notify("LUIS SCRIPT ANDROID LOADED 😈")
