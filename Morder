@@ -21,22 +21,24 @@ local lightCycle = 0
 local InfJumpEnabled = false 
 local autoClicking = false 
 local targetLobbyID = "" 
-local remotePath = "" -- Aquí se guarda lo que escribas
-
-local mfly1, mfly2 = nil, nil
+local remotePath = "" 
 
 -- [[ FUNCIONES DE APOYO ]]
 local function getRoot(char)
 	return char:FindFirstChild('HumanoidRootPart') or char:FindFirstChild('Torso') or char:FindFirstChild('UpperTorso')
 end
 
--- Función para convertir texto a objeto real
+-- Convertidor de texto a Objeto (Mejorado para detectar eventos)
 local function GetObjectFromPath(path)
+    -- Limpieza por si pegas código con :FireServer()
+    local cleanPath = path:gsub(":FireServer%(%)", ""):gsub(":InvokeServer%(%)", ""):gsub("%[", "."):gsub("%]", ""):gsub("'", ""):gsub('"', "")
+    
     local success, obj = pcall(function()
-        local parts = path:split(".")
+        local parts = cleanPath:split(".")
         local current = game
         for i = 2, #parts do
-            current = current:FindFirstChild(parts[i])
+            -- Intentamos encontrar el hijo sin que el script se trabe
+            current = current:FindFirstChild(parts[i]) or current:WaitForChild(parts[i], 1)
         end
         return current
     end)
@@ -55,7 +57,7 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- [[ LÓGICA FLY IY (INTACTA) ]]
+-- [[ LÓGICA FLY IY ]]
 local function unmobilefly()
     pcall(function()
         FLYING = false
@@ -87,7 +89,7 @@ local function mobilefly()
     bg.P = 1000
     bg.D = 50
 
-    mfly2 = RunService.RenderStepped:Connect(function()
+    RunService.RenderStepped:Connect(function()
         if FLYING and char and char.Parent then
             local humanoid = char:FindFirstChildWhichIsA("Humanoid")
             if humanoid and root:FindFirstChild("IY_Velocity") then
@@ -173,7 +175,7 @@ fId:AddButton("VOLVER AL LOBBY 🏠", function()
         hud:Notify("Regresando al mapa principal...")
         TeleportService:Teleport(tonumber(targetLobbyID), LP)
     else
-        hud:Notify("⚠️ Ingresa el ID en el cuadro de arriba")
+        hud:Notify("⚠️ Ingresa el ID")
     end
 end)
 fId:AddButton("SERVER HOP 🚀", function()
@@ -189,7 +191,7 @@ fId:AddButton("SERVER HOP 🚀", function()
     if #servers > 0 then
         TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LP)
     else
-        hud:Notify("No se encontraron servidores")
+        hud:Notify("No hay servidores")
     end
 end)
 
@@ -216,12 +218,12 @@ end)
 -- [[ CARPETA COMBATE ]]
 local fComb = hud:AddFolder("COMBATE 💀")
 
-fComb:AddTextBox("UBICACIÓN DEL REMOTE", function(valor)
+fComb:AddTextBox("UBICACIÓN O CÓDIGO", function(valor)
     remotePath = valor
-    hud:Notify("Ubicación guardada")
+    hud:Notify("Ubicación Guardada")
 end)
 
-fComb:AddButton("ACTIVAR AUTO-REMOTE ⚡", function()
+fComb:AddButton("AUTO-REMOTE (STAMINA/CLICK) ⚡", function()
     autoClicking = not autoClicking
     hud:Notify(autoClicking and "Auto-Remote ON" or "Auto-Remote OFF")
     
@@ -234,9 +236,11 @@ fComb:AddButton("ACTIVAR AUTO-REMOTE ⚡", function()
                         target:FireServer()
                     elseif target:IsA("Tool") then
                         target:Activate()
+                    elseif target:IsA("BindableEvent") then
+                        target:Fire()
                     end
                 end
-                task.wait(0.05)
+                task.wait(0.01) -- Velocidad máxima
             end
         end)
     end
@@ -259,4 +263,4 @@ fComb:AddButton("WALK FLING 🌀", function()
     end)
 end)
 
-hud:Notify("SCRIPT LUIS - MODO MANUAL LISTO 😈")
+hud:Notify("SCRIPT LUIS - FULL COMPATIBLE 😈")
