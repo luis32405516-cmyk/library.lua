@@ -1,0 +1,107 @@
+local RainbowUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Prueba2"))()
+local hud = RainbowUI:CreateWindow(230, 450) -- Aumenté la altura para los nuevos botones
+
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Variables de Control
+local noclipLoop, flyLoop = nil, nil
+local flySpeed = 50
+local walkflingEnabled = false
+
+-- [[ FUNCIONES CORE RECONSTRUIDAS ]]
+
+local function ToggleNoclip(state)
+    if noclipLoop then noclipLoop:Disconnect() noclipLoop = nil end
+    if state then
+        noclipLoop = RunService.Stepped:Connect(function()
+            if LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then part.CanCollide = false end
+                end
+            end
+        end)
+    end
+end
+
+local function ToggleFly(state)
+    if flyLoop then flyLoop:Disconnect() flyLoop = nil end
+    if not state then return end
+    
+    flyLoop = RunService.Heartbeat:Connect(function(delta)
+        local char = LocalPlayer.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+        
+        if root and hum then
+            root.Velocity = Vector3.new(0, 0.1, 0)
+            if hum.MoveDirection.Magnitude > 0 then
+                root.CFrame = root.CFrame + (hum.MoveDirection * flySpeed * delta)
+            end
+        end
+    end)
+end
+
+-- [[ CARPETAS NUEVAS (FLY, SPEED, NOCLIP, FLING) ]]
+
+local fMov = hud:AddFolder("MOVIMIENTO ⚡")
+
+fMov:AddSlider("WalkSpeed", 16, 300, 16, function(v)
+    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+    if hum then hum.WalkSpeed = v end
+end)
+
+local noclipActive = false
+fMov:AddButton("NOCLIP 👻", function()
+    noclipActive = not noclipActive
+    ToggleNoclip(noclipActive)
+    hud:Notify(noclipActive and "Noclip ON" or "Noclip OFF", 1)
+end)
+
+local flyActive = false
+fMov:AddButton("FLY ✈️", function()
+    flyActive = not flyActive
+    ToggleFly(flyActive)
+    hud:Notify(flyActive and "Fly ON" or "Fly OFF", 1)
+end)
+
+fMov:AddSlider("Fly Speed", 10, 500, 50, function(v)
+    flySpeed = v
+end)
+
+local fComb = hud:AddFolder("COMBATE 💀")
+
+fComb:AddButton("WALK FLING 🌀", function()
+    walkflingEnabled = not walkflingEnabled
+    hud:Notify(walkflingEnabled and "Fling ACTIVADO" or "Fling DESACTIVADO", 2)
+    
+    if walkflingEnabled then
+        ToggleNoclip(true) -- Auto-noclip para el fling
+        task.spawn(function()
+            while walkflingEnabled do
+                local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if root then
+                    local oldVel = root.Velocity
+                    root.Velocity = oldVel * 10000 + Vector3.new(0, 10000, 0)
+                    RunService.RenderStepped:Wait()
+                    if root then root.Velocity = oldVel end
+                    RunService.Stepped:Wait()
+                    if root then root.Velocity = oldVel + Vector3.new(0, 0.1, 0) end
+                end
+                RunService.Heartbeat:Wait()
+            end
+            if not noclipActive then ToggleNoclip(false) end
+        end)
+    end
+end)
+
+-- [[ CARPETAS ORIGINALES (MANTENIDAS) ]]
+
+local fObj = hud:AddFolder("OBJETOS 🗺️")
+-- ... (Aquí va tu lógica de BUSCAR que ya tienes)
+
+local fCheck = hud:AddFolder("CHECKPOINTS 🔙🔜")
+-- ... (Aquí van tus botones de flechas que ya tienes)
+
+hud:Notify("SCRIPT CARGADO 😈", 3)
