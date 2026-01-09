@@ -8,7 +8,6 @@ local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
-local VIM = game:GetService("VirtualInputManager") -- Para clicks físicos
 
 -- [[ VARIABLES GLOBALES ]]
 local FLYING = false
@@ -22,14 +21,26 @@ local lightCycle = 0
 local InfJumpEnabled = false 
 local autoClicking = false 
 local targetLobbyID = "" 
+local remotePath = "" -- Aquí se guarda lo que escribas
 
 local mfly1, mfly2 = nil, nil
-local velocityHandlerName = "IY_Velocity"
-local gyroHandlerName = "IY_Gyro"
 
 -- [[ FUNCIONES DE APOYO ]]
 local function getRoot(char)
 	return char:FindFirstChild('HumanoidRootPart') or char:FindFirstChild('Torso') or char:FindFirstChild('UpperTorso')
+end
+
+-- Función para convertir texto a objeto real
+local function GetObjectFromPath(path)
+    local success, obj = pcall(function()
+        local parts = path:split(".")
+        local current = game
+        for i = 2, #parts do
+            current = current:FindFirstChild(parts[i])
+        end
+        return current
+    end)
+    return success and obj or nil
 end
 
 LP.CharacterAdded:Connect(function(char)
@@ -44,15 +55,13 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- [[ LÓGICA FLY IY ]]
+-- [[ LÓGICA FLY IY (INTACTA) ]]
 local function unmobilefly()
     pcall(function()
         FLYING = false
-        if mfly1 then mfly1:Disconnect() end
-        if mfly2 then mfly2:Disconnect() end
         local root = getRoot(LP.Character)
-        if root:FindFirstChild(velocityHandlerName) then root[velocityHandlerName]:Destroy() end
-        if root:FindFirstChild(gyroHandlerName) then root[gyroHandlerName]:Destroy() end
+        if root:FindFirstChild("IY_Velocity") then root["IY_Velocity"]:Destroy() end
+        if root:FindFirstChild("IY_Gyro") then root["IY_Gyro"]:Destroy() end
         if LP.Character:FindFirstChildWhichIsA("Humanoid") then
             LP.Character:FindFirstChildWhichIsA("Humanoid").PlatformStand = false
         end
@@ -68,13 +77,12 @@ local function mobilefly()
     local controlModule = require(LP.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
     
     local bv = Instance.new("BodyVelocity", root)
-    bv.Name = velocityHandlerName
+    bv.Name = "IY_Velocity"
     bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
     bv.Velocity = Vector3.new(0, 0, 0)
 
     local bg = Instance.new("BodyGyro", root)
-    bg.Name = gyroHandlerName
-    bg.Parent = root
+    bg.Name = "IY_Gyro"
     bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
     bg.P = 1000
     bg.D = 50
@@ -82,14 +90,14 @@ local function mobilefly()
     mfly2 = RunService.RenderStepped:Connect(function()
         if FLYING and char and char.Parent then
             local humanoid = char:FindFirstChildWhichIsA("Humanoid")
-            if humanoid and root:FindFirstChild(velocityHandlerName) then
+            if humanoid and root:FindFirstChild("IY_Velocity") then
                 humanoid.PlatformStand = true
-                root[gyroHandlerName].CFrame = camera.CFrame
+                root["IY_Gyro"].CFrame = camera.CFrame
                 local direction = controlModule:GetMoveVector()
                 local flyVelocity = Vector3.new(0,0,0)
                 if direction.X ~= 0 then flyVelocity = flyVelocity + camera.CFrame.RightVector * (direction.X * (iyflyspeed * 50)) end
                 if direction.Z ~= 0 then flyVelocity = flyVelocity - camera.CFrame.LookVector * (direction.Z * (iyflyspeed * 50)) end
-                root[velocityHandlerName].Velocity = flyVelocity
+                root["IY_Velocity"].Velocity = flyVelocity
             end
         end
     end)
@@ -208,23 +216,26 @@ end)
 -- [[ CARPETA COMBATE ]]
 local fComb = hud:AddFolder("COMBATE 💀")
 
-fComb:AddButton("AUTO-CLICKER UNIVERSAL 🥊", function()
+fComb:AddTextBox("UBICACIÓN DEL REMOTE", function(valor)
+    remotePath = valor
+    hud:Notify("Ubicación guardada")
+end)
+
+fComb:AddButton("ACTIVAR AUTO-REMOTE ⚡", function()
     autoClicking = not autoClicking
-    hud:Notify(autoClicking and "Auto-Click ON" or "Auto-Click OFF")
+    hud:Notify(autoClicking and "Auto-Remote ON" or "Auto-Remote OFF")
     
     if autoClicking then
         task.spawn(function()
             while autoClicking do
-                -- Método 1: Herramientas (Guantes, espadas, etc.)
-                local tool = LP.Character and LP.Character:FindFirstChildOfClass("Tool")
-                if tool then
-                    tool:Activate()
+                local target = GetObjectFromPath(remotePath)
+                if target then
+                    if target:IsA("RemoteEvent") then
+                        target:FireServer()
+                    elseif target:IsA("Tool") then
+                        target:Activate()
+                    end
                 end
-                
-                -- Método 2: Click Físico (Para juegos de tocar la pantalla)
-                VIM:SendMouseButtonEvent(500, 500, 0, true, game, 1)
-                VIM:SendMouseButtonEvent(500, 500, 0, false, game, 1)
-                
                 task.wait(0.05)
             end
         end)
@@ -248,4 +259,4 @@ fComb:AddButton("WALK FLING 🌀", function()
     end)
 end)
 
-hud:Notify("SCRIPT LUIS - CARGADO 😈")
+hud:Notify("SCRIPT LUIS - MODO MANUAL LISTO 😈")
