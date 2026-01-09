@@ -7,6 +7,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService") -- Necesario para Server Hop
 
 -- [[ VARIABLES GLOBALES ]]
 local FLYING = false
@@ -19,7 +20,7 @@ local WalkSpeedValue = 16
 local lightCycle = 0 
 local InfJumpEnabled = false 
 local autoClicking = false 
-local targetLobbyID = "" -- Variable para el ID del mapa principal
+local targetLobbyID = "" 
 
 local mfly1, mfly2 = nil, nil
 local velocityHandlerName = "IY_Velocity"
@@ -147,7 +148,7 @@ fMov:AddButton("NOCLIP 👻", function()
     hud:Notify("Noclip: " .. tostring(noclipActive))
 end)
 
--- [[ CARPETA ID MANAGER (NUEVA) ]]
+-- [[ CARPETA ID MANAGER ]]
 local fId = hud:AddFolder("ID MANAGER 🆔")
 
 fId:AddButton("COPIAR ID ACTUAL 📋", function()
@@ -167,6 +168,23 @@ fId:AddButton("VOLVER AL LOBBY 🏠", function()
         TeleportService:Teleport(tonumber(targetLobbyID), LP)
     else
         hud:Notify("⚠️ Ingresa el ID en el cuadro de arriba")
+    end
+end)
+
+fId:AddButton("SERVER HOP (OTRO SERVER) 🚀", function()
+    hud:Notify("Buscando nuevo servidor...")
+    local servers = {}
+    local res = game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Desc&limit=100")
+    local data = HttpService:JSONDecode(res)
+    for _, s in pairs(data.data) do
+        if s.playing < s.maxPlayers and s.id ~= game.JobId then
+            table.insert(servers, s.id)
+        end
+    end
+    if #servers > 0 then
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LP)
+    else
+        hud:Notify("No se encontraron servidores")
     end
 end)
 
@@ -220,4 +238,4 @@ fComb:AddButton("AUTO-CLICKER 🖱️", function()
     end)
 end)
 
-hud:Notify("SCRIPT LUIS - ID MANAGER CARGADO 😈")
+hud:Notify("SCRIPT LUIS - SERVER HOP AÑADIDO 🚀")
