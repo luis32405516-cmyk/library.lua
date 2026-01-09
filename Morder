@@ -8,6 +8,7 @@ local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
+local VIM = game:GetService("VirtualInputManager") -- Para clicks físicos
 
 -- [[ VARIABLES GLOBALES ]]
 local FLYING = false
@@ -21,9 +22,6 @@ local lightCycle = 0
 local InfJumpEnabled = false 
 local autoClicking = false 
 local targetLobbyID = "" 
-
--- Variables para el Clicker Inteligente
-local lastRemote = nil
 
 local mfly1, mfly2 = nil, nil
 local velocityHandlerName = "IY_Velocity"
@@ -46,7 +44,7 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- [[ LÓGICA FLY IY (INTACTA) ]]
+-- [[ LÓGICA FLY IY ]]
 local function unmobilefly()
     pcall(function()
         FLYING = false
@@ -97,7 +95,7 @@ local function mobilefly()
     end)
 end
 
--- [[ LÓGICA ESP RAINBOW (INTACTA) ]]
+-- [[ LÓGICA ESP RAINBOW ]]
 task.spawn(function()
     while true do
         task.wait()
@@ -170,7 +168,7 @@ fId:AddButton("VOLVER AL LOBBY 🏠", function()
         hud:Notify("⚠️ Ingresa el ID en el cuadro de arriba")
     end
 end)
-fId:AddButton("SERVER HOP (OTRO SERVER) 🚀", function()
+fId:AddButton("SERVER HOP 🚀", function()
     hud:Notify("Buscando nuevo servidor...")
     local servers = {}
     local res = game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Desc&limit=100")
@@ -210,33 +208,26 @@ end)
 -- [[ CARPETA COMBATE ]]
 local fComb = hud:AddFolder("COMBATE 💀")
 
-fComb:AddButton("AUTO-CLICKER INTELIGENTE 🖱️✨", function()
+fComb:AddButton("AUTO-CLICKER UNIVERSAL 🥊", function()
     autoClicking = not autoClicking
+    hud:Notify(autoClicking and "Auto-Click ON" or "Auto-Click OFF")
     
     if autoClicking then
-        hud:Notify("APRENDIENDO: Usa tu herramienta una vez", 4)
-        lastRemote = nil
-        
-        -- Escaner de herramienta/acción
         task.spawn(function()
             while autoClicking do
-                if not lastRemote then
-                    local tool = LP.Character and LP.Character:FindFirstChildOfClass("Tool")
-                    if tool then
-                        lastRemote = tool
-                        hud:Notify("Capturado: " .. tool.Name)
-                    end
-                else
-                    -- Si ya capturó, empieza el spam
-                    if lastRemote:IsA("Tool") then
-                        lastRemote:Activate()
-                    end
+                -- Método 1: Herramientas (Guantes, espadas, etc.)
+                local tool = LP.Character and LP.Character:FindFirstChildOfClass("Tool")
+                if tool then
+                    tool:Activate()
                 end
-                task.wait(0.1)
+                
+                -- Método 2: Click Físico (Para juegos de tocar la pantalla)
+                VIM:SendMouseButtonEvent(500, 500, 0, true, game, 1)
+                VIM:SendMouseButtonEvent(500, 500, 0, false, game, 1)
+                
+                task.wait(0.05)
             end
         end)
-    else
-        hud:Notify("Auto-Click OFF")
     end
 end)
 
@@ -257,4 +248,4 @@ fComb:AddButton("WALK FLING 🌀", function()
     end)
 end)
 
-hud:Notify("SCRIPT LUIS - FULL POWER 😈")
+hud:Notify("SCRIPT LUIS - CARGADO 😈")
