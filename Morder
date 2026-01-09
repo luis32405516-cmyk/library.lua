@@ -13,6 +13,7 @@ local noclipActive = false
 local ESP_ENABLED = false
 local FLING_ENABLED = false
 local RainbowSpeed = 0.5
+local WalkSpeedValue = 16 -- Variable para el Speed
 
 local mfly1, mfly2 = nil, nil
 local velocityHandlerName = "IY_Velocity"
@@ -23,7 +24,13 @@ local function getRoot(char)
 	return char:FindFirstChild('HumanoidRootPart') or char:FindFirstChild('Torso') or char:FindFirstChild('UpperTorso')
 end
 
--- [[ LÓGICA FLY IY (EL QUE TE FUNCIONA) ]]
+-- Mantener el Speed al reaparecer
+LP.CharacterAdded:Connect(function(char)
+    local hum = char:WaitForChild("Humanoid")
+    hum.WalkSpeed = WalkSpeedValue
+end)
+
+-- [[ LÓGICA FLY IY ]]
 local function unmobilefly()
     pcall(function()
         FLYING = false
@@ -98,6 +105,15 @@ end)
 
 -- [[ CARPETA MOVIMIENTO ]]
 local fMov = hud:AddFolder("MOVIMIENTO ⚡")
+
+-- AQUÍ ESTÁ EL SPEED QUE HABÍAMOS QUITADO
+fMov:AddSlider("WalkSpeed 🏃", 16, 300, 16, function(v)
+    WalkSpeedValue = v
+    if LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
+        LP.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = v
+    end
+end)
+
 fMov:AddButton("FLY MOBILE (IY) ✈️", function()
     if FLYING then unmobilefly() else mobilefly() end
     hud:Notify(FLYING and "Fly ON" or "Fly OFF")
@@ -126,6 +142,10 @@ fVis:AddButton("ESP RAINBOW 🌈", function()
     hud:Notify(ESP_ENABLED and "ESP ON" or "ESP OFF")
 end)
 
+fVis:AddSlider("Velocidad Rainbow", 0, 2, 0.5, function(v)
+    RainbowSpeed = v
+end)
+
 -- [[ CARPETA COMBATE ]]
 local fComb = hud:AddFolder("COMBATE 💀")
 fComb:AddButton("WALK FLING 🌀", function()
@@ -145,4 +165,4 @@ fComb:AddButton("WALK FLING 🌀", function()
     end)
 end)
 
-hud:Notify("SCRIPT LUIS CARGADO 😈")
+hud:Notify("SCRIPT LUIS - SPEED RECUPERADO 😈")
