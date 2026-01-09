@@ -7,7 +7,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService") -- Necesario para Server Hop
+local HttpService = game:GetService("HttpService")
 
 -- [[ VARIABLES GLOBALES ]]
 local FLYING = false
@@ -21,6 +21,9 @@ local lightCycle = 0
 local InfJumpEnabled = false 
 local autoClicking = false 
 local targetLobbyID = "" 
+
+-- Variables para el Clicker Inteligente
+local lastRemote = nil
 
 local mfly1, mfly2 = nil, nil
 local velocityHandlerName = "IY_Velocity"
@@ -150,18 +153,15 @@ end)
 
 -- [[ CARPETA ID MANAGER ]]
 local fId = hud:AddFolder("ID MANAGER 🆔")
-
 fId:AddButton("COPIAR ID ACTUAL 📋", function()
     local id = tostring(game.PlaceId)
     setclipboard(id)
     hud:Notify("ID Copiado: " .. id)
 end)
-
 fId:AddTextBox("PEGAR ID DEL LOBBY", function(valor)
     targetLobbyID = valor
     hud:Notify("ID de Retorno Guardado")
 end)
-
 fId:AddButton("VOLVER AL LOBBY 🏠", function()
     if targetLobbyID ~= "" and tonumber(targetLobbyID) then
         hud:Notify("Regresando al mapa principal...")
@@ -170,7 +170,6 @@ fId:AddButton("VOLVER AL LOBBY 🏠", function()
         hud:Notify("⚠️ Ingresa el ID en el cuadro de arriba")
     end
 end)
-
 fId:AddButton("SERVER HOP (OTRO SERVER) 🚀", function()
     hud:Notify("Buscando nuevo servidor...")
     local servers = {}
@@ -210,6 +209,37 @@ end)
 
 -- [[ CARPETA COMBATE ]]
 local fComb = hud:AddFolder("COMBATE 💀")
+
+fComb:AddButton("AUTO-CLICKER INTELIGENTE 🖱️✨", function()
+    autoClicking = not autoClicking
+    
+    if autoClicking then
+        hud:Notify("APRENDIENDO: Usa tu herramienta una vez", 4)
+        lastRemote = nil
+        
+        -- Escaner de herramienta/acción
+        task.spawn(function()
+            while autoClicking do
+                if not lastRemote then
+                    local tool = LP.Character and LP.Character:FindFirstChildOfClass("Tool")
+                    if tool then
+                        lastRemote = tool
+                        hud:Notify("Capturado: " .. tool.Name)
+                    end
+                else
+                    -- Si ya capturó, empieza el spam
+                    if lastRemote:IsA("Tool") then
+                        lastRemote:Activate()
+                    end
+                end
+                task.wait(0.1)
+            end
+        end)
+    else
+        hud:Notify("Auto-Click OFF")
+    end
+end)
+
 fComb:AddButton("WALK FLING 🌀", function()
     FLING_ENABLED = not FLING_ENABLED
     hud:Notify(FLING_ENABLED and "Fling ON" or "Fling OFF")
@@ -226,16 +256,5 @@ fComb:AddButton("WALK FLING 🌀", function()
         end
     end)
 end)
-fComb:AddButton("AUTO-CLICKER 🖱️", function()
-    autoClicking = not autoClicking
-    hud:Notify(autoClicking and "Auto-Click ON" or "Auto-Click OFF")
-    task.spawn(function()
-        while autoClicking do
-            local tool = LP.Character and LP.Character:FindFirstChildOfClass("Tool")
-            if tool then tool:Activate() end
-            task.wait(0.1)
-        end
-    end)
-end)
 
-hud:Notify("SCRIPT LUIS - SERVER HOP AÑADIDO 🚀")
+hud:Notify("SCRIPT LUIS - FULL POWER 😈")
