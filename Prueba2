@@ -78,8 +78,8 @@ end
 function RainbowUI:Notify(txt)
     task.spawn(function()
         local n = Instance.new("TextLabel", self._sg)
-        n.Size = UDim2.new(0, 200, 0, 30)
-        n.Position = UDim2.new(0.5, -100, 0.1, 0)
+        n.Size = UDim2.new(0, 220, 0, 30)
+        n.Position = UDim2.new(0.5, -110, 0.1, 0)
         n.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
         n.TextColor3 = Color3.new(1, 1, 1)
         n.Text = txt
@@ -160,6 +160,35 @@ function RainbowUI:AddFolder(name)
         UserInputService.InputChanged:Connect(function(i) if s_dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then update() end end)
         UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then s_dragging = false end end)
     end
+
+    function folderApi:AddTextBox(text, callback)
+        local tFrame = Instance.new("Frame", container)
+        tFrame.Size = UDim2.new(1, 0, 0, 40)
+        tFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
+        tFrame.ZIndex = 11
+        Instance.new("UICorner", tFrame)
+        local label = Instance.new("TextLabel", tFrame)
+        label.Size = UDim2.new(1, -10, 0, 15)
+        label.Position = UDim2.new(0, 8, 0, 2)
+        label.BackgroundTransparency = 1
+        label.Text = text
+        label.TextColor3 = Color3.fromRGB(200, 200, 200)
+        label.TextSize = 12
+        label.ZIndex = 12
+        local box = Instance.new("TextBox", tFrame)
+        box.Size = UDim2.new(1, -20, 0, 18)
+        box.Position = UDim2.new(0, 10, 0, 18)
+        box.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+        box.TextColor3 = Color3.new(1, 1, 1)
+        box.PlaceholderText = "Pegar ID aqui..."
+        box.Text = ""
+        box.ZIndex = 13
+        Instance.new("UICorner", box)
+        box.FocusLost:Connect(function(enter)
+            callback(box.Text)
+        end)
+    end
+
     return folderApi
 end
 
