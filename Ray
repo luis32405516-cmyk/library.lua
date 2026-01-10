@@ -1,4 +1,4 @@
--- [[ LUIS UNV - ELITE LIBRARY ]]
+-- [[ LUIS UNV - ELITE LIBRARY (CON MINIMIZAR) ]]
 
 local Library = {}
 
@@ -20,7 +20,7 @@ function Library:CreateWindow()
     ScreenGui.Parent = game:GetService("CoreGui")
     ScreenGui.Name = "Luis_Elite_SafeClose"
 
-    -- [[ NOTIFICACIONES INTERNAS ]]
+    -- [[ NOTIFICACIONES ]]
     local function Notify(text, color)
         local n = Instance.new("Frame", ScreenGui)
         n.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
@@ -69,16 +69,38 @@ function Library:CreateWindow()
     Title.TextSize = 17
     Title.TextColor3 = Color3.new(1, 1, 1)
 
-    -- Botones Header
+    -- BOTÓN CERRAR
     local Close = Instance.new("TextButton", Header)
     Close.Size = UDim2.new(0, 20, 0, 20)
     Close.Position = UDim2.new(1, -28, 0.5, -10)
     Close.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
     Close.Text = "X"
+    Close.TextColor3 = Color3.new(1,1,1)
     Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
     Close.MouseButton1Click:Connect(function()
-        Notify("Cerrando Library...", Color3.new(1,0,0))
+        Notify("Cerrando...", Color3.new(1,0,0))
         task.wait(0.4) ScreenGui:Destroy()
+    end)
+
+    -- BOTÓN MINIMIZAR (EL QUE FALTABA)
+    local Minimize = Instance.new("TextButton", Header)
+    Minimize.Size = UDim2.new(0, 20, 0, 20)
+    Minimize.Position = UDim2.new(1, -55, 0.5, -10)
+    Minimize.BackgroundColor3 = Color3.fromRGB(180, 130, 40)
+    Minimize.Text = "-"
+    Minimize.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", Minimize).CornerRadius = UDim.new(1, 0)
+
+    local isMin = false
+    Minimize.MouseButton1Click:Connect(function()
+        if not isMin then
+            Main:TweenSize(UDim2.new(0, 360, 0, 35), "Out", "Quart", 0.3, true)
+            Minimize.Text = "+"
+        else
+            Main:TweenSize(UDim2.new(0, 360, 0, 230), "Out", "Quart", 0.3, true)
+            Minimize.Text = "-"
+        end
+        isMin = not isMin
     end)
 
     Sidebar.Parent = Main
@@ -88,9 +110,6 @@ function Library:CreateWindow()
     Sidebar.CanvasSize = UDim2.new(0, 0, 1.3, 0)
     Sidebar.ScrollBarThickness = 2
     Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
-    local SidebarList = Instance.new("UIListLayout", Sidebar)
-    SidebarList.Padding = UDim.new(0, 4)
-    SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
     Container.Parent = Main
     Container.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
@@ -99,9 +118,6 @@ function Library:CreateWindow()
     Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
     Container.ScrollBarThickness = 3
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
-    local ContainerList = Instance.new("UIListLayout", Container)
-    ContainerList.Padding = UDim.new(0, 10)
-    ContainerList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
     -- Ciclo Neón
     task.spawn(function()
@@ -112,7 +128,7 @@ function Library:CreateWindow()
         end
     end)
 
-    -- [[ LÓGICA DE ELEMENTOS ]]
+    -- [[ ELEMENTOS ]]
     local Elements = {}
 
     function Elements:CreateTab(name)
@@ -124,19 +140,14 @@ function Library:CreateWindow()
         t.Font = Enum.Font.GothamBold
         t.TextSize = 9
         Instance.new("UICorner", t).CornerRadius = UDim.new(0, 6)
-        
-        t.MouseButton1Click:Connect(function()
-            Notify("Pestaña: " .. name)
-        end)
+        t.MouseButton1Click:Connect(function() Notify("Sección: "..name) end)
     end
 
     function Elements:CreateSwitch(text, callback)
-        local callback = callback or function() end
         local Frame = Instance.new("Frame", Container)
         Frame.Size = UDim2.new(0.9, 0, 0, 32)
         Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
         Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-
         local Label = Instance.new("TextLabel", Frame)
         Label.Text = text
         Label.Size = UDim2.new(0.6, 0, 1, 0)
@@ -153,7 +164,6 @@ function Library:CreateWindow()
         Toggle.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
         Toggle.Text = ""
         Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0)
-        
         local Circle = Instance.new("Frame", Toggle)
         Circle.Size = UDim2.new(0, 16, 0, 16)
         Circle.Position = UDim2.new(0, 2, 0.5, -8)
@@ -170,13 +180,11 @@ function Library:CreateWindow()
     end
 
     function Elements:CreateSlider(text, callback)
-        local callback = callback or function() end
         local min, max = 0, 100
         local Frame = Instance.new("Frame", Container)
         Frame.Size = UDim2.new(0.9, 0, 0, 45)
         Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
         Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-        
         local Label = Instance.new("TextLabel", Frame)
         Label.Text = text .. " : 0"
         Label.Size = UDim2.new(1, -20, 0, 20)
@@ -194,12 +202,10 @@ function Library:CreateWindow()
         SliderBG.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
         SliderBG.Text = ""
         Instance.new("UICorner", SliderBG)
-
         local Fill = Instance.new("Frame", SliderBG)
         Fill.Size = UDim2.new(0, 0, 1, 0)
         Fill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
         Instance.new("UICorner", Fill)
-
         local Knob = Instance.new("Frame", Fill)
         Knob.Size = UDim2.new(0, 14, 0, 14)
         Knob.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -215,7 +221,6 @@ function Library:CreateWindow()
             Label.Text = text .. " : " .. value
             pcall(callback, value)
         end
-
         SliderBG.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true end
         end)
@@ -230,15 +235,4 @@ function Library:CreateWindow()
     return Elements
 end
 
--- [[ ESTE SERÍA TU SCRIPT APARTE USANDO LA LIBRERÍA ]]
-local Window = Library:CreateWindow()
-
-Window:CreateTab("⚡ MOVIMIENTO")
-Window:CreateSlider("WalkSpeed", function(v) print("Velocidad: ", v) end)
-Window:CreateSlider("JumpPower", function(v) print("Salto: ", v) end)
-
-Window:CreateTab("💀 COMBATE")
-Window:CreateSwitch("Kill Aura", function(state) print("Aura: ", state) end)
-Window:CreateSwitch("Auto Click", function(state) print("Clicker: ", state) end)
-
-Notify("Library Luis UNV Cargada ✅", Color3.new(0, 1, 1))
+return Library
