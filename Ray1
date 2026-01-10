@@ -1,4 +1,4 @@
--- [[ SCRIPT COMPLETO - LUIS UNV ]]
+-- [[ SCRIPT LUIS UNV - MOVIMIENTO COMPLETO ]]
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray"))()
 local Window = Library:CreateWindow()
@@ -6,37 +6,24 @@ local Window = Library:CreateWindow()
 local Player = game.Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
-local Root = Character:WaitForChild("HumanoidRootPart")
 
--- [[ VARIABLES DE ESTADO ]]
-local Noclip = false
+-- Variables de estado
 local InfiniteJump = false
-local PosicionGuardada = nil
+local Noclip = false
+local Flying = false
+local FlySpeed = 50
 
--- [[ PESTAÑA: MOVIMIENTO ]]
+---------------------------------------------------------
+-- [ APARTADO: MOVIMIENTO ]
+---------------------------------------------------------
 Window:CreateTab("⚡ MOVIMIENTO")
 
+-- 1. VELOCIDAD
 Window:CreateSlider("Velocidad", function(valor)
     Humanoid.WalkSpeed = valor
 end)
 
-Window:CreateSlider("Salto", function(valor)
-    Humanoid.JumpPower = valor
-end)
-
-Window:CreateSwitch("Noclip", function(estado)
-    Noclip = estado
-    game:GetService("RunService").Stepped:Connect(function()
-        if Noclip and Character then
-            for _, part in pairs(Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-        end
-    end)
-end)
-
+-- 2. SALTO INFINITO
 Window:CreateSwitch("Salto Infinito", function(estado)
     InfiniteJump = estado
     game:GetService("UserInputService").JumpRequest:Connect(function()
@@ -46,60 +33,63 @@ Window:CreateSwitch("Salto Infinito", function(estado)
     end)
 end)
 
--- [[ PESTAÑA: TELEPORT (NUEVA) ]]
-Window:CreateTab("📍 TELEPORT")
-
-Window:CreateSwitch("Guardar Ubicación", function(estado)
-    if estado then
-        PosicionGuardada = Root.CFrame
-        print("Ubicación Guardada ✅")
-    end
-end)
-
-Window:CreateSwitch("Teletransportarse", function(estado)
-    if estado and PosicionGuardada then
-        Root.CFrame = PosicionGuardada
-    end
-end)
-
--- [[ PESTAÑA: COMBATE ]]
-Window:CreateTab("💀 COMBATE")
-
-Window:CreateSwitch("Kill Aura (Test)", function(estado)
-    if estado then print("Kill Aura Activo") end
-end)
-
--- [[ PESTAÑA: VISUALES ]]
-Window:CreateTab("👁️ VISUALES")
-
-Window:CreateSwitch("Nombres ESP", function(estado)
-    for _, p in pairs(game.Players:GetPlayers()) do
-        if p ~= Player and p.Character and p.Character:FindFirstChild("Head") then
-            if estado then
-                local bill = Instance.new("BillboardGui", p.Character.Head)
-                bill.Name = "LuisESP"
-                bill.AlwaysOnTop = true
-                bill.Size = UDim2.new(0, 100, 0, 50)
-                bill.ExtentsOffset = Vector3.new(0, 3, 0)
-                local lbl = Instance.new("TextLabel", bill)
-                lbl.Text = p.Name
-                lbl.Size = UDim2.new(1, 0, 1, 0)
-                lbl.TextColor3 = Color3.new(1, 1, 1)
-                lbl.BackgroundTransparency = 1
-                lbl.Font = Enum.Font.GothamBold
-                lbl.TextSize = 12
-            else
-                if p.Character.Head:FindFirstChild("LuisESP") then
-                    p.Character.Head.LuisESP:Destroy()
+-- 3. NOCLIP (Atravesar Paredes)
+Window:CreateSwitch("Noclip", function(estado)
+    Noclip = estado
+    game:GetService("RunService").Stepped:Connect(function()
+        if Noclip and Character then
+            for _, part in pairs(Character:GetDescendants()) do
+                if part:IsA("BasePart") and part.CanCollide then
+                    part.CanCollide = false
                 end
             end
+        end
+    end)
+end)
+
+-- 4. FLY (El que funcionaba)
+Window:CreateSwitch("Volar (Fly)", function(estado)
+    Flying = estado
+    if Flying then
+        local TFrame = Character:WaitForChild("HumanoidRootPart")
+        local Pos = Instance.new("BodyPosition", TFrame)
+        local Gyro = Instance.new("BodyGyro", TFrame)
+        Pos.Name = "LuisFlyPos"
+        Pos.maxForce = Vector3.new(math.huge, math.huge, math.huge)
+        Pos.position = TFrame.Position
+        Gyro.Name = "LuisFlyGyro"
+        Gyro.maxTorque = Vector3.new(math.huge, math.huge, math.huge)
+        Gyro.cframe = TFrame.CFrame
+        
+        task.spawn(function()
+            while Flying do
+                local Camera = workspace.CurrentCamera
+                Pos.position = TFrame.Position + (Camera.CFrame.LookVector * FlySpeed / 50)
+                Gyro.cframe = Camera.CFrame
+                task.wait()
+            end
+            if Pos then Pos:Destroy() end
+            if Gyro then Gyro:Destroy() end
+        end)
+    else
+        if Character.HumanoidRootPart:FindFirstChild("LuisFlyPos") then
+            Character.HumanoidRootPart.LuisFlyPos:Destroy()
+        end
+        if Character.HumanoidRootPart:FindFirstChild("LuisFlyGyro") then
+            Character.HumanoidRootPart.LuisFlyGyro:Destroy()
         end
     end
 end)
 
--- [[ ACTUALIZAR PERSONAJE ]]
+-- Ajuste de velocidad para el Fly
+Window:CreateSlider("Velocidad Vuelo", function(valor)
+    FlySpeed = valor
+end)
+
+---------------------------------------------------------
+
+-- Actualizar referencias
 Player.CharacterAdded:Connect(function(newChar)
     Character = newChar
     Humanoid = newChar:WaitForChild("Humanoid")
-    Root = newChar:WaitForChild("HumanoidRootPart")
 end)
