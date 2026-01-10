@@ -31,6 +31,10 @@ local extraCodePath = ""
 -- Variables de Sistema
 local antiAfkEnabled = false
 
+-- Variables God Mode
+local godModeRegen = false
+local antiVoidEnabled = false
+
 -- [[ FUNCIONES DE APOYO ]]
 local function getRoot(char)
 	return char:FindFirstChild('HumanoidRootPart') or char:FindFirstChild('Torso') or char:FindFirstChild('UpperTorso')
@@ -273,7 +277,6 @@ end)
 
 fSys:AddButton("FPS BOOSTER (LAG FIX) 🚀", function()
     hud:Notify("Optimizando gráficos...")
-    -- Lógica de IY para Boost de FPS
     for _, v in pairs(game:GetDescendants()) do
         if v:IsA("Part") or v:IsA("UnionOperation") or v:IsA("MeshPart") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
             v.Material = Enum.Material.Plastic
@@ -288,6 +291,51 @@ fSys:AddButton("FPS BOOSTER (LAG FIX) 🚀", function()
     end
     settings().Rendering.QualityLevel = 1
     hud:Notify("Gráficos al mínimo: FPS estables")
+end)
+
+-- [[ CARPETA GOD MODE (NUEVA) ]]
+local fGod = hud:AddFolder("GOD MODE 🛡️")
+
+fGod:AddButton("GOD MODE (REGEN) 💉", function()
+    godModeRegen = not godModeRegen
+    hud:Notify(godModeRegen and "Regen God ON" or "Regen God OFF")
+    task.spawn(function()
+        while godModeRegen do
+            pcall(function()
+                if LP.Character and LP.Character:FindFirstChild("Humanoid") then
+                    LP.Character.Humanoid.Health = LP.Character.Humanoid.MaxHealth
+                end
+            end)
+            task.wait(0.01)
+        end
+    end)
+end)
+
+fGod:AddButton("INVISIBLE GOD 👻", function()
+    hud:Notify("Modo Fantasma Activado")
+    pcall(function()
+        local char = LP.Character
+        local hum = char:WaitForChild("Humanoid")
+        char.Parent = nil -- Te saca de la jerarquía para el servidor pero existes localmente
+        char.Parent = workspace
+    end)
+end)
+
+fGod:AddButton("ANTI-VOID 🛡️", function()
+    antiVoidEnabled = not antiVoidEnabled
+    hud:Notify(antiVoidEnabled and "Anti-Vacío ON" or "Anti-Vacío OFF")
+    task.spawn(function()
+        while antiVoidEnabled do
+            pcall(function()
+                local root = getRoot(LP.Character)
+                if root and root.Position.Y < -50 then -- Si caes por debajo del mapa
+                    root.Velocity = Vector3.new(0, 0, 0)
+                    root.CFrame = CFrame.new(root.Position.X, 50, root.Position.Z)
+                end
+            end)
+            task.wait(0.5)
+        end
+    end)
 end)
 
 hud:Notify("LUIS SCRIPT - FULL UPDATE ✅")
