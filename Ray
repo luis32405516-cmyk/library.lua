@@ -1,137 +1,110 @@
--- [[ LUIS HUD - VERSIÓN INTERACTIVA ]]
+-- [[ LUIS HUD - SISTEMA PERSIANA NEÓN ]]
 local ScreenGui = Instance.new("ScreenGui")
 local Main = Instance.new("Frame")
+local Header = Instance.new("Frame")
 local Sidebar = Instance.new("Frame")
-local Container = Instance.new("ScrollingFrame") -- Ahora tiene Scroll
-local UIListLayout = Instance.new("UIListLayout")
+local Container = Instance.new("Frame")
 
--- Configuración del GUI
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "LuisProHub"
+ScreenGui.Name = "LuisPro_Unv"
 
--- Main Frame (El cuerpo del menú)
+-- [[ CUERPO PRINCIPAL ]]
 Main.Name = "Main"
 Main.Parent = ScreenGui
-Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-Main.BorderSizePixel = 0
+Main.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 Main.Position = UDim2.new(0.5, -250, 0.5, -175)
 Main.Size = UDim2.new(0, 520, 0, 350)
 Main.Active = true
+Main.Draggable = true
+Main.ClipsDescendants = true -- Esto hace que el contenido se oculte al encogerse
 
--- Borde Redondeado y Neón
-local MainCorner = Instance.new("UICorner")
+local MainCorner = Instance.new("UICorner", Main)
 MainCorner.CornerRadius = UDim.new(0, 10)
-MainCorner.Parent = Main
 
-local MainStroke = Instance.new("UIStroke")
-MainStroke.Thickness = 2
+local MainStroke = Instance.new("UIStroke", Main)
+MainStroke.Thickness = 3
+MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 MainStroke.Transparency = 0.2
-MainStroke.Parent = Main
 
--- [[ SCRIPT PARA MOVER EL MENÚ CON EL DEDO (DRAG) ]]
-local UserInputService = game:GetService("UserInputService")
-local dragging, dragInput, dragStart, startPos
+-- [[ HEADER (LA BARRA QUE SE QUEDA AL MINIMIZAR) ]]
+Header.Name = "Header"
+Header.Parent = Main
+Header.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+Header.Size = UDim2.new(1, 0, 0, 40)
+Header.BorderSizePixel = 0
 
-local function update(input)
-	local delta = input.Position - dragStart
-	Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
+local Title = Instance.new("TextLabel", Header)
+Title.Name = "Title"
+Title.Text = "SCRIPT😈UNV😈LUIS"
+Title.Size = UDim2.new(1, -100, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.TextXAlignment = Enum.TextXAlignment.Left
 
-Main.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = input.Position
-		startPos = Main.Position
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then dragging = false end
-		end)
-	end
-end)
-
-Main.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		dragInput = input
-	end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-	if input == dragInput and dragging then update(input) end
-end)
-
--- [[ SIDEBAR (IZQUIERDA) ]]
+-- [[ ELEMENTOS QUE SE OCULTAN (SIDEBAR Y CONTENIDO) ]]
 Sidebar.Name = "Sidebar"
 Sidebar.Parent = Main
-Sidebar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-Sidebar.Size = UDim2.new(0, 140, 1, 0)
-Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
+Sidebar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+Sidebar.Position = UDim2.new(0, 5, 0, 45)
+Sidebar.Size = UDim2.new(0, 140, 1, -50)
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
 
-local TabHolder = Instance.new("ScrollingFrame", Sidebar)
-TabHolder.Size = UDim2.new(1, -10, 1, -60)
-TabHolder.Position = UDim2.new(0, 5, 0, 50)
-TabHolder.BackgroundTransparency = 1
-TabHolder.ScrollBarThickness = 0
-local TabLayout = Instance.new("UIListLayout", TabHolder)
-TabLayout.Padding = UDim.new(0, 5)
-
--- [[ CONTENEDOR CENTRAL (DERECHA) ]]
 Container.Name = "Container"
 Container.Parent = Main
-Container.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Container.Position = UDim2.new(0, 150, 0, 40)
-Container.Size = UDim2.new(1, -160, 1, -50)
-Container.CanvasSize = UDim2.new(0, 0, 2, 0) -- Scroll para abajo
-Container.ScrollBarThickness = 2
-Container.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+Container.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Container.Position = UDim2.new(0, 150, 0, 45)
+Container.Size = UDim2.new(1, -155, 1, -50)
 Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 8)
 
-local ContentLayout = Instance.new("UIListLayout", Container)
-ContentLayout.Padding = UDim.new(0, 8)
-ContentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-
--- [[ FUNCIÓN PARA AÑADIR PESTAÑAS ]]
-local function AddTab(name, neonColor)
-	local TabBtn = Instance.new("TextButton", TabHolder)
-	TabBtn.Size = UDim2.new(1, 0, 0, 35)
-	TabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-	TabBtn.Text = name
-	TabBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-	TabBtn.Font = Enum.Font.GothamSemibold
-	TabBtn.TextSize = 12
-	Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
-	
-	local TabStroke = Instance.new("UIStroke", TabBtn)
-	TabStroke.Color = neonColor
-	TabStroke.Thickness = 1
-    TabStroke.Transparency = 0.5
-
-	TabBtn.MouseButton1Click:Connect(function()
-		-- Aquí limpiaremos y cargaremos el contenido luego
-		print("Pestaña seleccionada: " .. name)
-	end)
-end
-
 -- [[ BOTONES DE CONTROL ]]
-local Close = Instance.new("TextButton", Main)
-Close.Size = UDim2.new(0, 25, 0, 25)
-Close.Position = UDim2.new(1, -30, 0, 5)
+local Close = Instance.new("TextButton", Header)
+Close.Size = UDim2.new(0, 28, 0, 28)
+Close.Position = UDim2.new(1, -35, 0.5, -14)
+Close.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
 Close.Text = "X"
-Close.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-Close.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
-Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+Close.TextColor3 = Color3.new(1, 1, 1)
+Close.Font = Enum.Font.GothamBold
+Instance.new("UICorner", Close).CornerRadius = UDim.new(0, 6)
 
--- [[ AÑADIR PESTAÑAS ]]
-AddTab("MOVIMIENTO", Color3.fromRGB(255, 0, 255))
-AddTab("COMBATE", Color3.fromRGB(0, 255, 255))
-AddTab("GOD MODE", Color3.fromRGB(255, 255, 0))
-AddTab("SISTEMA", Color3.fromRGB(0, 255, 120))
+local Minimize = Instance.new("TextButton", Header)
+Minimize.Size = UDim2.new(0, 28, 0, 28)
+Minimize.Position = UDim2.new(1, -70, 0.5, -14)
+Minimize.BackgroundColor3 = Color3.fromRGB(180, 130, 40)
+Minimize.Text = "-"
+Minimize.TextColor3 = Color3.new(1, 1, 1)
+Minimize.Font = Enum.Font.GothamBold
+Instance.new("UICorner", Minimize).CornerRadius = UDim.new(0, 6)
 
--- [[ EFECTO NEÓN ARCOÍRIS EN EL BORDE ]]
-task.spawn(function()
-	while task.wait(0.01) do
-		local hue = tick() % 5 / 5
-		MainStroke.Color = Color3.fromHSV(hue, 0.8, 1)
-	end
+-- [[ LÓGICA DE MINIMIZADO ]]
+local isMinimized = false
+
+Minimize.MouseButton1Click:Connect(function()
+    if not isMinimized then
+        -- Se encoge el HUD dejando solo el Header
+        Main:TweenSize(UDim2.new(0, 520, 0, 40), "Out", "Quart", 0.4, true)
+        Minimize.Text = "+"
+    else
+        -- Se expande a su tamaño normal
+        Main:TweenSize(UDim2.new(0, 520, 0, 350), "Out", "Quart", 0.4, true)
+        Minimize.Text = "-"
+    end
+    isMinimized = not isMinimized
 end)
 
-print("Luis HUD: Movible e Interactivo ✅")
+Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+-- [[ EFECTO NEÓN CON MOVIMIENTO ]]
+task.spawn(function()
+    while task.wait(0.01) do
+        local hue = (tick() % 5 / 5)
+        local neonColor = Color3.fromHSV(hue, 0.8, 1)
+        MainStroke.Color = neonColor
+        -- También le damos un toque de color al texto del título para que resalte
+        Title.TextColor3 = neonColor
+    end
+end)
+
+print("HUD SCRIPT UNV LUIS Cargado con éxito ✅")
