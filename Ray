@@ -1,112 +1,134 @@
--- [[ LUIS HUD - DISEÑO COMPACTO CON SCROLL VISIBLE ]]
+-- [[ LUIS HUD - VERSIÓN MINI CON EMOJIS ]]
 local ScreenGui = Instance.new("ScreenGui")
 local Main = Instance.new("Frame")
 local Header = Instance.new("Frame")
-local Sidebar = Instance.new("ScrollingFrame") -- Con Scroll
-local Container = Instance.new("ScrollingFrame") -- Con Scroll
+local Sidebar = Instance.new("ScrollingFrame")
+local Container = Instance.new("ScrollingFrame")
 
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "LuisPro_Unv_Compact"
+ScreenGui.Name = "Luis_Mini_Emojis"
 
 -- [[ CUERPO PRINCIPAL (MÁS PEQUEÑO) ]]
 Main.Name = "Main"
 Main.Parent = ScreenGui
-Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-Main.Position = UDim2.new(0.5, -200, 0.5, -150)
-Main.Size = UDim2.new(0, 450, 0, 300) -- Reducido de 520x350 a 450x300
+Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+Main.Position = UDim2.new(0.5, -175, 0.5, -125)
+Main.Size = UDim2.new(0, 380, 0, 250) -- Tamaño bien compacto
 Main.Active = true
 Main.Draggable = true
 Main.ClipsDescendants = true
 
 local MainStroke = Instance.new("UIStroke", Main)
-MainStroke.Thickness = 3
+MainStroke.Thickness = 2.5
 MainStroke.Transparency = 0.2
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
 
--- [[ HEADER (TÍTULO CENTRADO) ]]
+-- [[ HEADER ]]
 Header.Name = "Header"
 Header.Parent = Main
-Header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Header.Size = UDim2.new(1, 0, 0, 35)
+Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Header.Size = UDim2.new(1, 0, 0, 32)
 
 local Title = Instance.new("TextLabel", Header)
 Title.Name = "Title"
 Title.Text = "SCRIPT😈UNV😈LUIS"
 Title.Size = UDim2.new(1, 0, 1, 0)
-Title.Position = UDim2.new(0, 0, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
-Title.TextXAlignment = Enum.TextXAlignment.Center -- TÍTULO AL CENTRO
+Title.TextSize = 13
+Title.TextXAlignment = Enum.TextXAlignment.Center
 
--- [[ SIDEBAR CON SCROLL VISIBLE (IZQUIERDA) ]]
+-- [[ SIDEBAR CON EMOJIS 🛠️ ]]
 Sidebar.Name = "Sidebar"
 Sidebar.Parent = Main
-Sidebar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-Sidebar.Position = UDim2.new(0, 5, 0, 40)
-Sidebar.Size = UDim2.new(0, 120, 1, -45)
-Sidebar.CanvasSize = UDim2.new(0, 0, 2, 0) -- Contenido largo para probar scroll
-Sidebar.ScrollBarThickness = 4 -- BARRA VISIBLE
+Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Sidebar.Position = UDim2.new(0, 5, 0, 38)
+Sidebar.Size = UDim2.new(0, 110, 1, -43)
+Sidebar.CanvasSize = UDim2.new(0, 0, 1.5, 0) -- Scroll para las pestañas
+Sidebar.ScrollBarThickness = 2
 Sidebar.ScrollBarImageColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
 
 local SidebarList = Instance.new("UIListLayout", Sidebar)
-SidebarList.Padding = UDim.new(0, 5)
+SidebarList.Padding = UDim.new(0, 4)
 SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- [[ CONTAINER CON SCROLL VISIBLE (CENTRO) ]]
+-- Función para crear pestañas con diseño
+local function AddTab(name)
+    local t = Instance.new("TextLabel", Sidebar)
+    t.Size = UDim2.new(0.9, 0, 0, 28)
+    t.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    t.Text = name
+    t.TextColor3 = Color3.new(0.8, 0.8, 0.8)
+    t.Font = Enum.Font.GothamSemibold
+    t.TextSize = 11
+    Instance.new("UICorner", t).CornerRadius = UDim.new(0, 5)
+end
+
+-- Agregando pestañas con tus emojis
+AddTab("⚡ Movimiento")
+AddTab("💀 Combate")
+AddTab("🛡️ God Mode")
+AddTab("🛠️ Sistema")
+AddTab("🎨 Visuales")
+
+-- [[ CONTAINER CENTRAL ]]
 Container.Name = "Container"
 Container.Parent = Main
-Container.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
-Container.Position = UDim2.new(0, 130, 0, 40)
-Container.Size = UDim2.new(1, -135, 1, -45)
-Container.CanvasSize = UDim2.new(0, 0, 3, 0) -- Contenido muy largo
-Container.ScrollBarThickness = 5 -- BARRA VISIBLE
+Container.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+Container.Position = UDim2.new(0, 120, 0, 38)
+Container.Size = UDim2.new(1, -125, 1, -43)
+Container.CanvasSize = UDim2.new(0, 0, 4, 0) -- Canvas largo para probar el scroll
+Container.ScrollBarThickness = 3
 Container.ScrollBarImageColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 8)
 
 local ContainerList = Instance.new("UIListLayout", Container)
-ContainerList.Padding = UDim.new(0, 8)
+ContainerList.Padding = UDim.new(0, 6)
 ContainerList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- [[ BOTONES DE PRUEBA (Para ver el scroll moviéndose) ]]
-for i = 1, 15 do
-    local b = Instance.new("TextLabel", Container)
-    b.Size = UDim2.new(0.9, 0, 0, 30)
-    b.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    b.Text = "Botón Relleno " .. i
-    b.TextColor3 = Color3.new(1, 1, 1)
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 5)
+-- Relleno de prueba para el scroll
+for i = 1, 20 do
+    local f = Instance.new("Frame", Container)
+    f.Size = UDim2.new(0.9, 0, 0, 25)
+    f.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    local l = Instance.new("TextLabel", f)
+    l.Size = UDim2.new(1, 0, 1, 0)
+    l.Text = "Opcion " .. i
+    l.BackgroundTransparency = 1
+    l.TextColor3 = Color3.new(0.6, 0.6, 0.6)
+    l.TextSize = 10
+    Instance.new("UICorner", f).CornerRadius = UDim.new(0, 4)
 end
 
--- [[ BOTONES CONTROL ]]
+-- [[ CONTROLES ]]
 local Close = Instance.new("TextButton", Header)
-Close.Size = UDim2.new(0, 22, 0, 22)
-Close.Position = UDim2.new(1, -30, 0.5, -11)
+Close.Size = UDim2.new(0, 20, 0, 20)
+Close.Position = UDim2.new(1, -25, 0.5, -10)
 Close.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
 Close.Text = "X"
 Close.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
 
 local Minimize = Instance.new("TextButton", Header)
-Minimize.Size = UDim2.new(0, 22, 0, 22)
-Minimize.Position = UDim2.new(1, -55, 0.5, -11)
+Minimize.Size = UDim2.new(0, 20, 0, 20)
+Minimize.Position = UDim2.new(1, -50, 0.5, -10)
 Minimize.BackgroundColor3 = Color3.fromRGB(150, 120, 0)
 Minimize.Text = "-"
 Minimize.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Minimize).CornerRadius = UDim.new(1, 0)
 
--- [[ LÓGICA MINIMIZAR ]]
-local isMinimized = false
+-- Lógica Minimizar
+local min = false
 Minimize.MouseButton1Click:Connect(function()
-    if not isMinimized then
-        Main:TweenSize(UDim2.new(0, 450, 0, 35), "Out", "Quart", 0.3, true)
+    if not min then
+        Main:TweenSize(UDim2.new(0, 380, 0, 32), "Out", "Quart", 0.3, true)
         Minimize.Text = "+"
     else
-        Main:TweenSize(UDim2.new(0, 450, 0, 300), "Out", "Quart", 0.3, true)
+        Main:TweenSize(UDim2.new(0, 380, 0, 250), "Out", "Quart", 0.3, true)
         Minimize.Text = "-"
     end
-    isMinimized = not isMinimized
+    min = not min
 end)
 
 Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
@@ -118,8 +140,8 @@ task.spawn(function()
         local c = Color3.fromHSV(h, 0.8, 1)
         MainStroke.Color = c
         Title.TextColor3 = c
-        Container.ScrollBarImageColor3 = c -- La barra de scroll también brilla
+        Container.ScrollBarImageColor3 = c
     end
 end)
 
-print("HUD Compacto con Scroll visible listo ✅")
+print("HUD Mini-Emoji cargado. ¡A probar el scroll, mi amor! ✅")
