@@ -1,0 +1,34 @@
+-- Muestra de Rayfield Library
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/UI-Libraries/Rayfield/main/source'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "LUIS SCRIPT - MUESTRA RAYFIELD",
+    AnchorPoint = Enum.AnchorPoint.BottomLeft,
+    Position = UDim2.new(0, 5, 1, -5),
+    AutoShow = true,
+    Draggable = true,
+    AlwaysOnTop = true,
+    Keybind = Enum.KeyCode.RightControl
+})
+
+-- Pestaña de Movimiento
+local MovementTab = Window:CreateTab("MOVIMIENTO ⚡", 4483362458) -- Icono de rayo (ID de imagen de Roblox)
+MovementTab:AddSlider("WalkSpeed 🏃", {
+    Min = 16,
+    Max = 300,
+    Current = 16,
+    Increment = 1,
+    Suffix = "Studs/s",
+    Callback = function(v)
+        -- print("WalkSpeed cambiado a: " .. v) -- Aquí iría tu lógica
+        local LP = game:GetService("Players").LocalPlayer
+        if LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
+            LP.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = v
+        end
+    end,
+})
+
+MovementTab:AddToggle("FLY MOBILE (IY) ✈️", nil, function(state)
+    -- print("Fly Toggled: " .. tostring(state)) -- Aquí iría tu lógica del Fly
+    local LP = game:GetService("Players").LocalPlayer
+    local FLYING = state --
