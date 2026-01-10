@@ -20,7 +20,7 @@ local XRAY_ENABLED = false
 local WalkSpeedValue = 16
 local targetLobby = ""
 
--- [[ LÓGICA FLY MOBILE IY - TU CÓDIGO ]]
+-- [[ LÓGICA FLY MOBILE IY - INTACTA ]]
 local function mobilefly()
     FLYING = true
     local char = LP.Character
@@ -56,7 +56,6 @@ Mov:CreateSlider("Velocidad", 16, 500, function(v)
 end)
 
 Mov:CreateSwitch("Fly Mobile (IY)", function(s) if s then mobilefly() else FLYING = false end end)
-
 Mov:CreateSlider("Fly Speed", 1, 20, function(v) iyflyspeed = v end)
 
 Mov:CreateSwitch("Noclip 👻", function(s) 
@@ -142,9 +141,10 @@ Ser:CreateButton("SERVER HOP 🚀", function()
     if #srv > 0 then TeleportService:TeleportToPlaceInstance(game.PlaceId, srv[math.random(1, #srv)], LP) end 
 end)
 
-Ser:CreateButton("COPIAR ID JUEGO 📋", function() setclipboard(tostring(game.PlaceId)) end)
-
+-- ORDEN SOLICITADO AQUÍ:
 Ser:CreateTextBox("ID DEL LOBBY", function(v) targetLobby = v end)
+
+Ser:CreateButton("COPIAR ID JUEGO 📋", function() setclipboard(tostring(game.PlaceId)) end)
 
 Ser:CreateButton("IR AL LOBBY 🏠", function() 
     if targetLobby ~= "" then TeleportService:Teleport(tonumber(targetLobby), LP) end 
