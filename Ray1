@@ -1,4 +1,4 @@
--- [[ LUIS UNV - SCRIPT FINAL FULL ORDENADO + AVATAR ]]
+-- [[ LUIS UNV - SCRIPT FINAL FULL + NOTIFICACIONES Y SONIDOS ]]
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray"))()
 local Window = Library:CreateWindow()
 
@@ -61,7 +61,7 @@ Vis:CreateSlider("Color ESP (0=Rainbow)", 0, 100, function(v) ESP_Color = v end)
 Vis:CreateSwitch("X-Ray (Paredes) 💎", function(s) XRAY_ENABLED = s; for _,v in pairs(workspace:GetDescendants()) do if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") then v.Transparency = s and 0.5 or 0 end end end)
 Vis:CreateSlider("Hora", 0, 24, function(v) Lighting.ClockTime = v end)
 
--- [[ PESTAÑA: SERVER (ORDEN CORREGIDO) ]]
+-- [[ PESTAÑA: SERVER ]]
 local Ser = Window:CreateTab("🌐 SERVER")
 Ser:CreateButton("REJOIN 🔄", function() TeleportService:Teleport(game.PlaceId, LP) end)
 Ser:CreateButton("SERVER HOP 🚀", function() 
@@ -69,7 +69,6 @@ Ser:CreateButton("SERVER HOP 🚀", function()
     for _, s in pairs(game:GetService("HttpService"):JSONDecode(res).data) do if s.playing < s.maxPlayers and s.id ~= game.JobId then table.insert(srv, s.id) end end
     if #srv > 0 then TeleportService:TeleportToPlaceInstance(game.PlaceId, srv[math.random(1, #srv)], LP) end 
 end)
--- BLOQUE SOLICITADO
 Ser:CreateTextBox("ID DEL LOBBY", function(v) targetLobby = v end)
 Ser:CreateButton("COPIAR ID JUEGO 📋", function() setclipboard(tostring(game.PlaceId)) end)
 Ser:CreateButton("IR AL LOBBY 🏠", function() if targetLobby ~= "" then TeleportService:Teleport(tonumber(targetLobby), LP) end end)
