@@ -1,125 +1,137 @@
--- [[ LIBRERÍA LUIS-RAYFIELD (CÓDIGO PURO) ]]
+-- [[ LUIS HUD - VERSIÓN INTERACTIVA ]]
 local ScreenGui = Instance.new("ScreenGui")
 local Main = Instance.new("Frame")
 local Sidebar = Instance.new("Frame")
-local TabHolder = Instance.new("ScrollingFrame")
-local Container = Instance.new("Frame")
+local Container = Instance.new("ScrollingFrame") -- Ahora tiene Scroll
 local UIListLayout = Instance.new("UIListLayout")
 
--- Configuración Base
+-- Configuración del GUI
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "LuisRayfield"
+ScreenGui.Name = "LuisProHub"
 
+-- Main Frame (El cuerpo del menú)
 Main.Name = "Main"
 Main.Parent = ScreenGui
-Main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 Main.BorderSizePixel = 0
 Main.Position = UDim2.new(0.5, -250, 0.5, -175)
-Main.Size = UDim2.new(0, 500, 0, 350)
+Main.Size = UDim2.new(0, 520, 0, 350)
 Main.Active = true
-Main.Draggable = true
 
--- Bordes redondeados y sombra
+-- Borde Redondeado y Neón
 local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 8)
+MainCorner.CornerRadius = UDim.new(0, 10)
 MainCorner.Parent = Main
 
 local MainStroke = Instance.new("UIStroke")
 MainStroke.Thickness = 2
-MainStroke.Color = Color3.fromRGB(45, 45, 45)
+MainStroke.Transparency = 0.2
 MainStroke.Parent = Main
 
--- Barra Lateral (Sidebar)
-Sidebar.Name = "Sidebar"
-Sidebar.Parent = Main
-Sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Sidebar.BorderSizePixel = 0
-Sidebar.Size = UDim2.new(0, 140, 1, 0)
+-- [[ SCRIPT PARA MOVER EL MENÚ CON EL DEDO (DRAG) ]]
+local UserInputService = game:GetService("UserInputService")
+local dragging, dragInput, dragStart, startPos
 
-local SidebarCorner = Instance.new("UICorner")
-SidebarCorner.CornerRadius = UDim.new(0, 8)
-SidebarCorner.Parent = Sidebar
-
--- Título en Sidebar
-local HubTitle = Instance.new("TextLabel")
-HubTitle.Parent = Sidebar
-HubTitle.Size = UDim2.new(1, 0, 0, 40)
-HubTitle.Text = "LUIS HUB"
-HubTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-HubTitle.Font = Enum.Font.GothamBold
-HubTitle.TextSize = 16
-HubTitle.BackgroundTransparency = 1
-
--- Contenedor de Pestañas
-TabHolder.Parent = Sidebar
-TabHolder.BackgroundTransparency = 1
-TabHolder.Position = UDim2.new(0, 5, 0, 45)
-TabHolder.Size = UDim2.new(1, -10, 1, -50)
-TabHolder.CanvasSize = UDim2.new(0, 0, 0, 0)
-TabHolder.ScrollBarThickness = 0
-
-local TabLayout = Instance.new("UIListLayout")
-TabLayout.Parent = TabHolder
-TabLayout.Padding = UDim.new(0, 5)
-
--- Contenedor de funciones (Derecha)
-Container.Name = "Container"
-Container.Parent = Main
-Container.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Container.Position = UDim2.new(0, 145, 0, 10)
-Container.Size = UDim2.new(1, -155, 1, -20)
-Container.BackgroundTransparency = 0.5
-
-local ContainerCorner = Instance.new("UICorner")
-ContainerCorner.CornerRadius = UDim.new(0, 8)
-ContainerCorner.Parent = Container
-
--- Función para añadir pestañas (TABS)
-local function AddTab(name, color)
-    local TabBtn = Instance.new("TextButton")
-    TabBtn.Parent = TabHolder
-    TabBtn.Size = UDim2.new(1, 0, 0, 35)
-    TabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TabBtn.Text = name
-    TabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    TabBtn.Font = Enum.Font.GothamSemibold
-    TabBtn.TextSize = 12
-    
-    local TabCorner = Instance.new("UICorner")
-    TabCorner.CornerRadius = UDim.new(0, 6)
-    TabCorner.Parent = TabBtn
-    
-    local TabStroke = Instance.new("UIStroke")
-    TabStroke.Thickness = 1
-    TabStroke.Color = color or Color3.fromRGB(100, 100, 100)
-    TabStroke.Parent = TabBtn
-    
-    return TabBtn
+local function update(input)
+	local delta = input.Position - dragStart
+	Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
 
--- Botones de Control (Cerrar / Minimizar)
-local Close = Instance.new("TextButton")
-Close.Parent = Main
-Close.Size = UDim2.new(0, 20, 0, 20)
-Close.Position = UDim2.new(1, -25, 0, 5)
-Close.Text = "X"
-Close.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-Close.TextColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", Close).CornerRadius = UDim.new(0, 5)
-Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-
--- AGREGANDO LAS PESTAÑAS COMO EN LA IMAGEN
-AddTab("MOVIMIENTO", Color3.fromRGB(255, 0, 255)) -- Rosa
-AddTab("COMBATE", Color3.fromRGB(0, 255, 255))    -- Cyan
-AddTab("VISUALES", Color3.fromRGB(255, 255, 0))  -- Amarillo
-AddTab("SISTEMA", Color3.fromRGB(0, 255, 100))   -- Verde
-
--- Efecto Neón en el borde (Animado)
-task.spawn(function()
-    while task.wait(0.05) do
-        local hue = tick() % 5 / 5
-        MainStroke.Color = Color3.fromHSV(hue, 1, 1)
-    end
+Main.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = Main.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then dragging = false end
+		end)
+	end
 end)
 
-print("HUD Estilo Rayfield (Luis Edition) Cargado ✅")
+Main.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then update(input) end
+end)
+
+-- [[ SIDEBAR (IZQUIERDA) ]]
+Sidebar.Name = "Sidebar"
+Sidebar.Parent = Main
+Sidebar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Sidebar.Size = UDim2.new(0, 140, 1, 0)
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
+
+local TabHolder = Instance.new("ScrollingFrame", Sidebar)
+TabHolder.Size = UDim2.new(1, -10, 1, -60)
+TabHolder.Position = UDim2.new(0, 5, 0, 50)
+TabHolder.BackgroundTransparency = 1
+TabHolder.ScrollBarThickness = 0
+local TabLayout = Instance.new("UIListLayout", TabHolder)
+TabLayout.Padding = UDim.new(0, 5)
+
+-- [[ CONTENEDOR CENTRAL (DERECHA) ]]
+Container.Name = "Container"
+Container.Parent = Main
+Container.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Container.Position = UDim2.new(0, 150, 0, 40)
+Container.Size = UDim2.new(1, -160, 1, -50)
+Container.CanvasSize = UDim2.new(0, 0, 2, 0) -- Scroll para abajo
+Container.ScrollBarThickness = 2
+Container.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 8)
+
+local ContentLayout = Instance.new("UIListLayout", Container)
+ContentLayout.Padding = UDim.new(0, 8)
+ContentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- [[ FUNCIÓN PARA AÑADIR PESTAÑAS ]]
+local function AddTab(name, neonColor)
+	local TabBtn = Instance.new("TextButton", TabHolder)
+	TabBtn.Size = UDim2.new(1, 0, 0, 35)
+	TabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	TabBtn.Text = name
+	TabBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
+	TabBtn.Font = Enum.Font.GothamSemibold
+	TabBtn.TextSize = 12
+	Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
+	
+	local TabStroke = Instance.new("UIStroke", TabBtn)
+	TabStroke.Color = neonColor
+	TabStroke.Thickness = 1
+    TabStroke.Transparency = 0.5
+
+	TabBtn.MouseButton1Click:Connect(function()
+		-- Aquí limpiaremos y cargaremos el contenido luego
+		print("Pestaña seleccionada: " .. name)
+	end)
+end
+
+-- [[ BOTONES DE CONTROL ]]
+local Close = Instance.new("TextButton", Main)
+Close.Size = UDim2.new(0, 25, 0, 25)
+Close.Position = UDim2.new(1, -30, 0, 5)
+Close.Text = "X"
+Close.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+Close.TextColor3 = Color3.fromRGB(255, 255, 255)
+Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
+Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+-- [[ AÑADIR PESTAÑAS ]]
+AddTab("MOVIMIENTO", Color3.fromRGB(255, 0, 255))
+AddTab("COMBATE", Color3.fromRGB(0, 255, 255))
+AddTab("GOD MODE", Color3.fromRGB(255, 255, 0))
+AddTab("SISTEMA", Color3.fromRGB(0, 255, 120))
+
+-- [[ EFECTO NEÓN ARCOÍRIS EN EL BORDE ]]
+task.spawn(function()
+	while task.wait(0.01) do
+		local hue = tick() % 5 / 5
+		MainStroke.Color = Color3.fromHSV(hue, 0.8, 1)
+	end
+end)
+
+print("Luis HUD: Movible e Interactivo ✅")
