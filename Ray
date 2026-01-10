@@ -1,4 +1,10 @@
--- [[ LUIS HUD - SISTEMA DE CERRADO SEGURO ]]
+-- [[ LUIS HUD - SISTEMA ANTI MULTI-EJECUCIÓN ]]
+
+-- 1. EVITAR DUPLICADOS (Si ya existe, lo borra para abrir el nuevo)
+if game:GetService("CoreGui"):FindFirstChild("Luis_Elite_SafeClose") then
+    game:GetService("CoreGui"):FindFirstChild("Luis_Elite_SafeClose"):Destroy()
+end
+
 local ScreenGui = Instance.new("ScreenGui")
 local Main = Instance.new("Frame")
 local Header = Instance.new("Frame")
@@ -9,7 +15,7 @@ local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "Luis_Elite_SafeClose"
+ScreenGui.Name = "Luis_Elite_SafeClose" -- Nombre único para detectar duplicados
 
 -- [[ FUNCIÓN NOTIFICACIÓN ]]
 local function Notify(text, color)
@@ -73,17 +79,12 @@ Close.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
 
 Close.MouseButton1Click:Connect(function()
-    -- 1. Notificación de despedida
     Notify("Script Cerrado Correctamente ✅", Color3.new(1, 0, 0))
-    
-    -- 2. Lógica de "Force Close" (Resetear estados del personaje)
     local char = LP.Character
     if char and char:FindFirstChild("Humanoid") then
-        char.Humanoid.WalkSpeed = 16 -- Reset velocidad
-        char.Humanoid.JumpPower = 50 -- Reset salto
+        char.Humanoid.WalkSpeed = 16
+        char.Humanoid.JumpPower = 50
     end
-    
-    -- 3. Esperar un momento para que se vea la notificación y destruir
     task.wait(0.5)
     ScreenGui:Destroy()
 end)
@@ -131,7 +132,7 @@ local ContainerList = Instance.new("UIListLayout", Container)
 ContainerList.Padding = UDim.new(0, 10)
 ContainerList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- [[ FUNCIONES DE CONTROLES (TOPE 100) ]]
+-- [[ FUNCIONES DE CONTROLES ]]
 local function AddSlider(text)
     local min, max = 0, 100
     local Frame = Instance.new("Frame", Container)
@@ -226,12 +227,11 @@ local function AddSwitch(text)
     end)
 end
 
--- CARGAR CONTROLES
+-- [[ CARGAR ]]
 AddSlider("WalkSpeed")
 AddSlider("JumpPower")
 AddSwitch("Noclip Mode")
 
--- PERSISTENCIA DE NEÓN Y MINIMIZAR
 local isMin = false
 Minimize.MouseButton1Click:Connect(function()
     if not isMin then
@@ -252,4 +252,4 @@ task.spawn(function()
     end
 end)
 
-Notify("Luis UNV Script Cargado 😈", Color3.new(0, 1, 1))
+Notify("Luis UNV - Protección Anti-Multi Lista ✅", Color3.new(0, 1, 1))
