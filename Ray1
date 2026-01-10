@@ -1,4 +1,4 @@
--- [[ LUIS UNV - SCRIPT DEFINITIVO ACTUALIZADO ]]
+-- [[ LUIS UNV - SCRIPT ACTUALIZADO (MOV + VIS + SIS) ]]
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray"))()
 local Window = Library:CreateWindow()
@@ -7,6 +7,7 @@ local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
 
 -- [[ VARIABLES DE ESTADO ]]
 local FLYING = false
@@ -15,14 +16,16 @@ local noclipActive = false
 local InfJumpEnabled = false
 local WalkSpeedValue = 16
 local ESP_ENABLED = false
+local ESP_Color_Value = 0 -- 0 es Rainbow, > 0 es color fijo
 local FLING_ENABLED = false
+local XRAY_ENABLED = false
 
 -- [[ FUNCIONES DE APOYO ]]
 local function getRoot(char)
     return char:FindFirstChild('HumanoidRootPart') or char:FindFirstChild('Torso') or char:FindFirstChild('UpperTorso')
 end
 
--- [[ LÓGICA FLY MOBILE (TU CÓDIGO) ]]
+-- [ LÓGICA FLY MOBILE IY - INTACTA ]
 local function unmobilefly()
     FLYING = false
     local root = getRoot(LP.Character)
@@ -40,18 +43,10 @@ local function mobilefly()
     local root = getRoot(char)
     local camera = workspace.CurrentCamera
     local controlModule = require(LP.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
-    
     local bv = Instance.new("BodyVelocity", root)
-    bv.Name = "IY_Velocity"
-    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-    bv.Velocity = Vector3.new(0, 0, 0)
-
+    bv.Name = "IY_Velocity"; bv.MaxForce = Vector3.new(9e9, 9e9, 9e9); bv.Velocity = Vector3.new(0, 0, 0)
     local bg = Instance.new("BodyGyro", root)
-    bg.Name = "IY_Gyro"
-    bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-    bg.P = 1000
-    bg.D = 50
-
+    bg.Name = "IY_Gyro"; bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9); bg.P = 1000; bg.D = 50
     task.spawn(function()
         while FLYING do
             RunService.RenderStepped:Wait()
@@ -85,7 +80,7 @@ TabMov:CreateSwitch("Fly Mobile (IY)", function(estado)
 end)
 
 TabMov:CreateSlider("Fly Speed", function(v)
-    iyflyspeed = v
+    iyflyspeed = v / 10 -- Ajustado para que el slider sea más preciso
 end)
 
 TabMov:CreateSwitch("Noclip 👻", function(estado)
@@ -93,9 +88,7 @@ TabMov:CreateSwitch("Noclip 👻", function(estado)
     if noclipActive then
         _G.Noc = RunService.Stepped:Connect(function()
             if LP.Character then
-                for _, v in pairs(LP.Character:GetDescendants()) do 
-                    if v:IsA("BasePart") then v.CanCollide = false end 
-                end
+                for _, v in pairs(LP.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
             end
         end)
     else
@@ -107,40 +100,22 @@ TabMov:CreateSwitch("Infinite Jump 🦘", function(estado)
     InfJumpEnabled = estado
 end)
 
-TabMov:CreateSwitch("Walk Fling 🌀", function(estado)
-    FLING_ENABLED = estado
-    task.spawn(function()
-        while FLING_ENABLED do
-            RunService.Heartbeat:Wait()
-            local root = getRoot(LP.Character)
-            if root then
-                local oldVel = root.Velocity
-                root.Velocity = oldVel * 10000 + Vector3.new(0, 10000, 0)
-                RunService.RenderStepped:Wait()
-                if root then root.Velocity = oldVel end
-            end
-        end
-    end)
-end)
-
 ---------------------------------------------------------
 -- [ APARTADO: VISUALES ]
 ---------------------------------------------------------
 local TabVis = Window:CreateTab("👁️ VISUALES")
 
-TabVis:CreateSwitch("ESP Rainbow 🌈", function(estado)
+TabVis:CreateSwitch("ESP Maestro 🌈", function(estado)
     ESP_ENABLED = estado
     if ESP_ENABLED then
         task.spawn(function()
             while ESP_ENABLED do
-                local color = Color3.fromHSV((tick() * 0.5) % 1, 1, 1)
+                -- Si el slider es 0, es Rainbow. Si no, usa el valor del slider.
+                local color = (ESP_Color_Value == 0) and Color3.fromHSV((tick() * 0.5) % 1, 1, 1) or Color3.fromHSV(ESP_Color_Value / 100, 1, 1)
                 for _, player in pairs(Players:GetPlayers()) do
                     if player ~= LP and player.Character then
-                        local hl = player.Character:FindFirstChild("IY_ESP") or Instance.new("Highlight", player.Character)
-                        hl.Name = "IY_ESP"
-                        hl.FillColor = color
-                        hl.OutlineColor = Color3.new(1, 1, 1)
-                        hl.FillTransparency = 0.5
+                        local hl = player.Character:FindFirstChild("Luis_ESP") or Instance.new("Highlight", player.Character)
+                        hl.Name = "Luis_ESP"; hl.FillColor = color; hl.OutlineColor = Color3.new(1, 1, 1); hl.FillTransparency = 0.5
                     end
                 end
                 task.wait()
@@ -148,10 +123,45 @@ TabVis:CreateSwitch("ESP Rainbow 🌈", function(estado)
         end)
     else
         for _, player in pairs(Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("IY_ESP") then 
-                player.Character.IY_ESP:Destroy() 
+            if player.Character and player.Character:FindFirstChild("Luis_ESP") then player.Character.Luis_ESP:Destroy() end
+        end
+    end
+end)
+
+TabVis:CreateSlider("Color ESP (0 = Rainbow)", function(v)
+    ESP_Color_Value = v
+end)
+
+TabVis:CreateSwitch("X-Ray (Paredes) 💎", function(estado)
+    XRAY_ENABLED = estado
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") then
+            if XRAY_ENABLED then
+                if v.Transparency < 0.5 then v.Transparency = 0.5 end
+            else
+                v.Transparency = 0
             end
         end
+    end
+end)
+
+TabVis:CreateSlider("Hora del Mundo ☀️🌙", function(v)
+    Lighting.ClockTime = (v / 100) * 24
+end)
+
+---------------------------------------------------------
+-- [ APARTADO: SISTEMA ]
+---------------------------------------------------------
+local TabSys = Window:CreateTab("🛠️ SISTEMA")
+
+TabSys:CreateSwitch("Anti-AFK 🚫💤", function(estado)
+    if estado then
+        _G.AntiAfk = LP.Idled:Connect(function()
+            game:GetService("VirtualUser"):CaptureController()
+            game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+        end)
+    else
+        if _G.AntiAfk then _G.AntiAfk:Disconnect() end
     end
 end)
 
