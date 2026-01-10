@@ -1,36 +1,65 @@
--- [[ LUIS HUD - VERSIÓN MINI CON EMOJIS ]]
+-- [[ LUIS HUD - FONDO NEÓN ANIMADO EN CONTAINER CENTRAL ]]
 local ScreenGui = Instance.new("ScreenGui")
 local Main = Instance.new("Frame")
 local Header = Instance.new("Frame")
 local Sidebar = Instance.new("ScrollingFrame")
 local Container = Instance.new("ScrollingFrame")
+local Players = game:GetService("Players")
+local LP = Players.LocalPlayer
 
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "Luis_Mini_Emojis"
+ScreenGui.Name = "Luis_Neon_Flow"
 
--- [[ CUERPO PRINCIPAL (MÁS PEQUEÑO) ]]
+-- [[ FUNCIÓN DE NOTIFICACIÓN ]]
+local function Notify(text, color)
+    local Notification = Instance.new("Frame")
+    Notification.Parent = ScreenGui
+    Notification.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Notification.Position = UDim2.new(1, 0, 1, -60)
+    Notification.Size = UDim2.new(0, 200, 0, 45)
+    
+    local UIStroke = Instance.new("UIStroke", Notification)
+    UIStroke.Color = color or Color3.new(0, 1, 1)
+    UIStroke.Thickness = 2
+    
+    local Label = Instance.new("TextLabel", Notification)
+    Label.Size = UDim2.new(1, 0, 1, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = "🔔 " .. text
+    Label.TextColor3 = Color3.new(1, 1, 1)
+    Label.Font = Enum.Font.GothamSemibold
+    Label.TextSize = 12
+    
+    Instance.new("UICorner", Notification).CornerRadius = UDim.new(0, 8)
+    
+    Notification:TweenPosition(UDim2.new(1, -210, 1, -60), "Out", "Quart", 0.5)
+    task.wait(3)
+    Notification:TweenPosition(UDim2.new(1, 0, 1, -60), "In", "Quart", 0.5)
+    task.wait(0.5)
+    Notification:Destroy()
+end
+
+-- [[ CUERPO PRINCIPAL ]]
 Main.Name = "Main"
 Main.Parent = ScreenGui
-Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+Main.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 Main.Position = UDim2.new(0.5, -175, 0.5, -125)
-Main.Size = UDim2.new(0, 380, 0, 250) -- Tamaño bien compacto
+Main.Size = UDim2.new(0, 380, 0, 260)
 Main.Active = true
 Main.Draggable = true
 Main.ClipsDescendants = true
 
 local MainStroke = Instance.new("UIStroke", Main)
 MainStroke.Thickness = 2.5
-MainStroke.Transparency = 0.2
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
 
 -- [[ HEADER ]]
 Header.Name = "Header"
 Header.Parent = Main
-Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Header.Size = UDim2.new(1, 0, 0, 32)
 
 local Title = Instance.new("TextLabel", Header)
-Title.Name = "Title"
 Title.Text = "SCRIPT😈UNV😈LUIS"
 Title.Size = UDim2.new(1, 0, 1, 0)
 Title.BackgroundTransparency = 1
@@ -38,57 +67,108 @@ Title.Font = Enum.Font.GothamBold
 Title.TextSize = 13
 Title.TextXAlignment = Enum.TextXAlignment.Center
 
--- [[ SIDEBAR CON EMOJIS 🛠️ ]]
+-- [[ SIDEBAR ]]
 Sidebar.Name = "Sidebar"
 Sidebar.Parent = Main
-Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Sidebar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 Sidebar.Position = UDim2.new(0, 5, 0, 38)
 Sidebar.Size = UDim2.new(0, 110, 1, -43)
-Sidebar.CanvasSize = UDim2.new(0, 0, 1.5, 0) -- Scroll para las pestañas
-Sidebar.ScrollBarThickness = 2
-Sidebar.ScrollBarImageColor3 = Color3.new(1, 1, 1)
+Sidebar.ScrollBarThickness = 0
 Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
+
+-- IMAGEN DEL AVATAR
+local AvatarImg = Instance.new("ImageLabel", Sidebar)
+AvatarImg.Name = "AvatarImg"
+AvatarImg.Size = UDim2.new(0, 50, 0, 50)
+AvatarImg.Position = UDim2.new(0.5, -25, 0, 5)
+AvatarImg.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+AvatarImg.Image = Players:GetUserThumbnailAsync(LP.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+local AvatarCorner = Instance.new("UICorner", AvatarImg)
+AvatarCorner.CornerRadius = UDim.new(1, 0)
+
+local AvatarStroke = Instance.new("UIStroke", AvatarImg)
+AvatarStroke.Thickness = 2
 
 local SidebarList = Instance.new("UIListLayout", Sidebar)
 SidebarList.Padding = UDim.new(0, 4)
 SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- Función para crear pestañas con diseño
+local Spacer = Instance.new("Frame", Sidebar)
+Spacer.Size = UDim2.new(1, 0, 0, 55)
+Spacer.BackgroundTransparency = 1
+
 local function AddTab(name)
-    local t = Instance.new("TextLabel", Sidebar)
+    local t = Instance.new("TextButton", Sidebar)
     t.Size = UDim2.new(0.9, 0, 0, 28)
     t.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     t.Text = name
     t.TextColor3 = Color3.new(0.8, 0.8, 0.8)
     t.Font = Enum.Font.GothamSemibold
-    t.TextSize = 11
+    t.TextSize = 10
     Instance.new("UICorner", t).CornerRadius = UDim.new(0, 5)
+    t.MouseButton1Click:Connect(function() Notify("Pestaña: " .. name) end)
 end
 
--- Agregando pestañas con tus emojis
 AddTab("⚡ Movimiento")
 AddTab("💀 Combate")
-AddTab("🛡️ God Mode")
 AddTab("🛠️ Sistema")
 AddTab("🎨 Visuales")
 
--- [[ CONTAINER CENTRAL ]]
+-- [[ CONTAINER CENTRAL CON FONDO NEÓN ANIMADO ]]
 Container.Name = "Container"
 Container.Parent = Main
-Container.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+Container.BackgroundColor3 = Color3.fromRGB(18, 18, 18) -- Base oscura
 Container.Position = UDim2.new(0, 120, 0, 38)
 Container.Size = UDim2.new(1, -125, 1, -43)
-Container.CanvasSize = UDim2.new(0, 0, 4, 0) -- Canvas largo para probar el scroll
+Container.CanvasSize = UDim2.new(0, 0, 4, 0)
 Container.ScrollBarThickness = 3
 Container.ScrollBarImageColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 8)
+
+-- EFECTO DE RAYAS NEÓN ANIMADAS EN EL FONDO DEL CONTAINER
+local NeonBackgroundEffect = Instance.new("Frame", Container)
+NeonBackgroundEffect.Name = "NeonBackgroundEffect"
+NeonBackgroundEffect.Size = UDim2.new(1, 0, 1, 0)
+NeonBackgroundEffect.BackgroundTransparency = 0.7 -- Transparencia para ver el contenido
+NeonBackgroundEffect.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Color base (negro transparente)
+
+-- Un "degradado" con UIListLayout para simular las rayas
+local GradientLayout = Instance.new("UIListLayout", NeonBackgroundEffect)
+GradientLayout.FillDirection = Enum.FillDirection.Horizontal
+GradientLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+GradientLayout.Padding = UDim.new(0, 0) -- Sin padding para que las rayas estén juntas
+
+for i = 1, 5 do -- 5 rayas de prueba
+    local NeonStrip = Instance.new("Frame", NeonBackgroundEffect)
+    NeonStrip.Name = "Strip" .. i
+    NeonStrip.Size = UDim2.new(0.2, 0, 1, 0) -- Cada raya ocupa 20% del ancho
+    NeonStrip.BackgroundTransparency = 0.8
+    NeonStrip.BackgroundColor3 = Color3.fromHSV(i/5, 0.8, 1) -- Colores diferentes para cada raya
+    NeonStrip.ZIndex = 0 -- Asegura que esté detrás del contenido
+end
+
+-- ANIMACIÓN DE LAS RAYAS (DESPLAZAMIENTO HORIZONTAL)
+task.spawn(function()
+    local strips = NeonBackgroundEffect:GetChildren()
+    local speed = 0.005 -- Velocidad de desplazamiento
+    while task.wait() do
+        for _, strip in pairs(strips) do
+            if strip:IsA("Frame") and strip.Name:find("Strip") then
+                strip.Position = strip.Position + UDim2.new(speed, 0, 0, 0)
+                if strip.Position.X.Scale >= 1 then -- Si se sale de la pantalla por la derecha
+                    strip.Position = UDim2.new(-1, 0, strip.Position.Y.Scale, strip.Position.Y.Offset) -- Vuelve al inicio por la izquierda
+                end
+            end
+        end
+    end
+end)
+
 
 local ContainerList = Instance.new("UIListLayout", Container)
 ContainerList.Padding = UDim.new(0, 6)
 ContainerList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- Relleno de prueba para el scroll
-for i = 1, 20 do
+for i = 1, 10 do -- Menos opciones de prueba para ver el fondo
     local f = Instance.new("Frame", Container)
     f.Size = UDim2.new(0.9, 0, 0, 25)
     f.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -96,7 +176,7 @@ for i = 1, 20 do
     l.Size = UDim2.new(1, 0, 1, 0)
     l.Text = "Opcion " .. i
     l.BackgroundTransparency = 1
-    l.TextColor3 = Color3.new(0.6, 0.6, 0.6)
+    l.TextColor3 = Color3.new(0.8, 0.8, 0.8)
     l.TextSize = 10
     Instance.new("UICorner", f).CornerRadius = UDim.new(0, 4)
 end
@@ -107,41 +187,38 @@ Close.Size = UDim2.new(0, 20, 0, 20)
 Close.Position = UDim2.new(1, -25, 0.5, -10)
 Close.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
 Close.Text = "X"
-Close.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
+Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 local Minimize = Instance.new("TextButton", Header)
 Minimize.Size = UDim2.new(0, 20, 0, 20)
 Minimize.Position = UDim2.new(1, -50, 0.5, -10)
 Minimize.BackgroundColor3 = Color3.fromRGB(150, 120, 0)
 Minimize.Text = "-"
-Minimize.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Minimize).CornerRadius = UDim.new(1, 0)
 
--- Lógica Minimizar
 local min = false
 Minimize.MouseButton1Click:Connect(function()
     if not min then
         Main:TweenSize(UDim2.new(0, 380, 0, 32), "Out", "Quart", 0.3, true)
         Minimize.Text = "+"
     else
-        Main:TweenSize(UDim2.new(0, 380, 0, 250), "Out", "Quart", 0.3, true)
+        Main:TweenSize(UDim2.new(0, 380, 0, 260), "Out", "Quart", 0.3, true)
         Minimize.Text = "-"
     end
     min = not min
 end)
 
-Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-
--- [[ EFECTO NEÓN ]]
+-- [[ EFECTO NEÓN SINCRONIZADO ]]
 task.spawn(function()
     while task.wait(0.01) do
         local h = (tick() % 5 / 5)
         local c = Color3.fromHSV(h, 0.8, 1)
         MainStroke.Color = c
         Title.TextColor3 = c
-        Container.ScrollBarImageColor3 = c
+        AvatarStroke.Color = c
+        -- NOTA: El NeonBackgroundEffect es independiente para un movimiento constante
     end
 end)
 
-print("HUD Mini-Emoji cargado. ¡A probar el scroll, mi amor! ✅")
+Notify("HUD listo con fondo neón animado 🔥", Color3.fromRGB(0, 255, 255))
