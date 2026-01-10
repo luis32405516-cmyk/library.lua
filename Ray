@@ -1,4 +1,4 @@
--- [[ LUIS HUD - SLIDER FUNCIONAL Y ELITE ]]
+-- [[ LUIS HUD - VERSIÓN TOTAL RE-CALIDAD ]]
 local ScreenGui = Instance.new("ScreenGui")
 local Main = Instance.new("Frame")
 local Header = Instance.new("Frame")
@@ -9,9 +9,9 @@ local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "Luis_Elite_Final_v3"
+ScreenGui.Name = "Luis_Full_Script_UNV"
 
--- [[ FUNCIÓN NOTIFICACIÓN ]]
+-- [[ NOTIFICACIÓN ]]
 local function Notify(text, color)
     local n = Instance.new("Frame", ScreenGui)
     n.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
@@ -35,7 +35,7 @@ local function Notify(text, color)
     end)
 end
 
--- [[ CUERPO PRINCIPAL ]]
+-- [[ CUERPO PRINCIPAL ARRASTRABLE ]]
 Main.Name = "Main"
 Main.Parent = ScreenGui
 Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
@@ -48,7 +48,7 @@ Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 local MainStroke = Instance.new("UIStroke", Main)
 MainStroke.Thickness = 3
 
--- [[ HEADER ]]
+-- [[ HEADER CIRCULAR ]]
 Header.Name = "Header"
 Header.Parent = Main
 Header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -63,7 +63,6 @@ Title.Font = Enum.Font.LuckiestGuy
 Title.TextSize = 17
 Title.TextColor3 = Color3.new(1, 1, 1)
 
--- Botones Control
 local Close = Instance.new("TextButton", Header)
 Close.Size = UDim2.new(0, 20, 0, 20)
 Close.Position = UDim2.new(1, -28, 0.5, -10)
@@ -72,7 +71,14 @@ Close.Text = "X"
 Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
 Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- [[ SIDEBAR ]]
+local Minimize = Instance.new("TextButton", Header)
+Minimize.Size = UDim2.new(0, 20, 0, 20)
+Minimize.Position = UDim2.new(1, -55, 0.5, -10)
+Minimize.BackgroundColor3 = Color3.fromRGB(180, 130, 40)
+Minimize.Text = "-"
+Instance.new("UICorner", Minimize).CornerRadius = UDim.new(1, 0)
+
+-- [[ SIDEBAR CON TRANQUE ]]
 Sidebar.Name = "Sidebar"
 Sidebar.Parent = Main
 Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
@@ -80,7 +86,9 @@ Sidebar.Position = UDim2.new(0, 8, 0, 42)
 Sidebar.Size = UDim2.new(0, 100, 1, -50)
 Sidebar.CanvasSize = UDim2.new(0, 0, 1.3, 0)
 Sidebar.ScrollBarThickness = 3
+Sidebar.ScrollBarImageColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
+
 local SidebarList = Instance.new("UIListLayout", Sidebar)
 SidebarList.Padding = UDim.new(0, 4)
 SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -101,13 +109,54 @@ Container.Position = UDim2.new(0, 115, 0, 42)
 Container.Size = UDim2.new(1, -123, 1, -50)
 Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
 Container.ScrollBarThickness = 4
+Container.ScrollBarImageColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
 local ContainerList = Instance.new("UIListLayout", Container)
 ContainerList.Padding = UDim.new(0, 10)
 ContainerList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- [[ FUNCIÓN SLIDER FUNCIONAL ]]
-local function AddSlider(text, min, max)
+-- [[ FUNCIONES DE CONTROLES ]]
+
+local function AddSwitch(text)
+    local Frame = Instance.new("Frame", Container)
+    Frame.Size = UDim2.new(0.9, 0, 0, 32)
+    Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
+
+    local Label = Instance.new("TextLabel", Frame)
+    Label.Text = text
+    Label.Size = UDim2.new(0.6, 0, 1, 0)
+    Label.Position = UDim2.new(0, 10, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.TextColor3 = Color3.new(1, 1, 1)
+    Label.Font = Enum.Font.GothamBold
+    Label.TextSize = 10
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local Toggle = Instance.new("TextButton", Frame)
+    Toggle.Size = UDim2.new(0, 38, 0, 20)
+    Toggle.Position = UDim2.new(1, -48, 0.5, -10)
+    Toggle.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    Toggle.Text = ""
+    Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0)
+    
+    local Circle = Instance.new("Frame", Toggle)
+    Circle.Size = UDim2.new(0, 16, 0, 16)
+    Circle.Position = UDim2.new(0, 2, 0.5, -8)
+    Circle.BackgroundColor3 = Color3.new(1, 1, 1)
+    Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+
+    local state = false
+    Toggle.MouseButton1Click:Connect(function()
+        state = not state
+        Circle:TweenPosition(state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8), "Out", "Quart", 0.2, true)
+        Toggle.BackgroundColor3 = state and Color3.fromRGB(0, 180, 100) or Color3.fromRGB(45, 45, 45)
+        Notify(text .. (state and ": ON" or ": OFF"), state and Color3.new(0,1,0) or Color3.new(1,0,0))
+    end)
+end
+
+local function AddSlider(text)
+    local min, max = 0, 100 -- LÍMITE GLOBAL 100
     local Frame = Instance.new("Frame", Container)
     Frame.Size = UDim2.new(0.9, 0, 0, 45)
     Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -152,67 +201,51 @@ local function AddSlider(text, min, max)
     end
 
     SliderBG.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-        end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true end
     end)
-
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
     end)
-
     UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            move(input)
-        end
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then move(input) end
     end)
 end
 
--- [[ FUNCIÓN SWITCH ]]
-local function AddSwitch(text)
-    local Frame = Instance.new("Frame", Container)
-    Frame.Size = UDim2.new(0.9, 0, 0, 32)
-    Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-
-    local Label = Instance.new("TextLabel", Frame)
-    Label.Text = text
-    Label.Size = UDim2.new(0.6, 0, 1, 0)
-    Label.Position = UDim2.new(0, 10, 0, 0)
-    Label.BackgroundTransparency = 1
-    Label.TextColor3 = Color3.new(1, 1, 1)
-    Label.Font = Enum.Font.GothamBold
-    Label.TextSize = 10
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-
-    local Toggle = Instance.new("TextButton", Frame)
-    Toggle.Size = UDim2.new(0, 38, 0, 20)
-    Toggle.Position = UDim2.new(1, -48, 0.5, -10)
-    Toggle.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    Toggle.Text = ""
-    Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0)
-    
-    local Circle = Instance.new("Frame", Toggle)
-    Circle.Size = UDim2.new(0, 16, 0, 16)
-    Circle.Position = UDim2.new(0, 2, 0.5, -8)
-    Circle.BackgroundColor3 = Color3.new(1, 1, 1)
-    Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
-
-    local state = false
-    Toggle.MouseButton1Click:Connect(function()
-        state = not state
-        Circle:TweenPosition(state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8), "Out", "Quart", 0.2, true)
-        Toggle.BackgroundColor3 = state and Color3.fromRGB(0, 180, 100) or Color3.fromRGB(45, 45, 45)
-        Notify(text .. (state and ": ON" or ": OFF"), state and Color3.new(0,1,0) or Color3.new(1,0,0))
-    end)
+-- [[ PESTAÑAS ]]
+local function AddTab(name)
+    local t = Instance.new("TextButton", Sidebar)
+    t.Size = UDim2.new(0.9, 0, 0, 24)
+    t.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    t.Text = name
+    t.TextColor3 = Color3.new(1, 1, 1)
+    t.Font = Enum.Font.GothamBold
+    t.TextSize = 9
+    Instance.new("UICorner", t).CornerRadius = UDim.new(0, 6)
+    t.MouseButton1Click:Connect(function() Notify("Sección: "..name) end)
 end
 
--- PRUEBAS
-AddSlider("WalkSpeed", 16, 200)
-AddSlider("JumpPower", 50, 500)
+AddTab("⚡ MOVIMIENTO")
+AddTab("💀 COMBATE")
+AddTab("🛠️ SISTEMA")
+
+-- [[ CARGAR CONTROLES ]]
+AddSlider("WalkSpeed")
+AddSlider("JumpPower")
 AddSwitch("Noclip Mode")
+AddSwitch("Auto-Run")
+
+-- [[ NEÓN Y MINIMIZAR ]]
+local isMin = false
+Minimize.MouseButton1Click:Connect(function()
+    if not isMin then
+        Main:TweenSize(UDim2.new(0, 360, 0, 35), "Out", "Quart", 0.3, true)
+        Minimize.Text = "+"
+    else
+        Main:TweenSize(UDim2.new(0, 360, 0, 230), "Out", "Quart", 0.3, true)
+        Minimize.Text = "-"
+    end
+    isMin = not isMin
+end)
 
 task.spawn(function()
     while task.wait(0.01) do
@@ -222,4 +255,4 @@ task.spawn(function()
     end
 end)
 
-Notify("Sliders Funcionales ✅", Color3.new(0, 1, 1))
+Notify("Todo el sistema cargado ✅", Color3.new(0, 1, 1))
