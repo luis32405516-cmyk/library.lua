@@ -8,6 +8,7 @@ local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
+local VirtualUser = game:GetService("VirtualUser") -- Para el Anti-AFK
 
 -- [[ VARIABLES GLOBALES ]]
 local FLYING = false
@@ -26,6 +27,9 @@ local autoClicker = false
 local autoWin = false
 local extraAuto = false
 local extraCodePath = ""
+
+-- Variables de Sistema
+local antiAfkEnabled = false
 
 -- [[ FUNCIONES DE APOYO ]]
 local function getRoot(char)
@@ -46,6 +50,15 @@ local function GetObjectFromPath(path)
     end)
     return success and obj or nil
 end
+
+-- [[ LÓGICA ANTI-AFK (ESTILO IY) ]]
+LP.Idled:Connect(function()
+    if antiAfkEnabled then
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+        hud:Notify("Anti-AFK: Evitando desconexión...")
+    end
+end)
 
 LP.CharacterAdded:Connect(function(char)
     local hum = char:WaitForChild("Humanoid")
@@ -250,4 +263,31 @@ fComb:AddButton("WALK FLING 🌀", function()
     end)
 end)
 
-hud:Notify("LUIS SCRIPT - TODO RECUPERADO ✅")
+-- [[ CARPETA SISTEMA (NUEVO) ]]
+local fSys = hud:AddFolder("SISTEMA 🛠️")
+
+fSys:AddButton("ANTI-AFK 🚫💤", function()
+    antiAfkEnabled = not antiAfkEnabled
+    hud:Notify(antiAfkEnabled and "Anti-AFK Activado" or "Anti-AFK Desactivado")
+end)
+
+fSys:AddButton("FPS BOOSTER (LAG FIX) 🚀", function()
+    hud:Notify("Optimizando gráficos...")
+    -- Lógica de IY para Boost de FPS
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("Part") or v:IsA("UnionOperation") or v:IsA("MeshPart") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
+            v.Material = Enum.Material.Plastic
+            v.Reflectance = 0
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            v.Transparency = 1
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+            v.Lifetime = NumberRange.new(0)
+        elseif v:IsA("Explosion") then
+            v.Visible = false
+        end
+    end
+    settings().Rendering.QualityLevel = 1
+    hud:Notify("Gráficos al mínimo: FPS estables")
+end)
+
+hud:Notify("LUIS SCRIPT - FULL UPDATE ✅")
