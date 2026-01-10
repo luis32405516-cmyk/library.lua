@@ -1,8 +1,8 @@
--- [[ LUIS UNV - ELITE LIBRARY VERIFICADA ]]
+-- [[ LUIS UNV - ELITE LIBRARY (SCROLL IZQUIERDO REPARADO) ]]
 
 local Library = {}
 
--- 1. SISTEMA ANTI-DUPLICADOS
+-- [[ ANTI-DUPLICADOS ]]
 if game:GetService("CoreGui"):FindFirstChild("Luis_Elite_SafeClose") then
     game:GetService("CoreGui"):FindFirstChild("Luis_Elite_SafeClose"):Destroy()
 end
@@ -11,8 +11,8 @@ function Library:CreateWindow()
     local ScreenGui = Instance.new("ScreenGui")
     local Main = Instance.new("Frame")
     local Header = Instance.new("Frame")
-    local Sidebar = Instance.new("ScrollingFrame")
-    local Container = Instance.new("ScrollingFrame")
+    local Sidebar = Instance.new("ScrollingFrame") -- Lado Izquierdo
+    local Container = Instance.new("ScrollingFrame") -- Lado Derecho
     local UserInputService = game:GetService("UserInputService")
     local Players = game:GetService("Players")
     local LP = Players.LocalPlayer
@@ -20,7 +20,7 @@ function Library:CreateWindow()
     ScreenGui.Parent = game:GetService("CoreGui")
     ScreenGui.Name = "Luis_Elite_SafeClose"
 
-    -- [[ FUNCIÓN NOTIFICACIÓN INTERNA ]]
+    -- [[ NOTIFICACIÓN ]]
     local function Notify(text, color)
         local n = Instance.new("Frame", ScreenGui)
         n.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
@@ -44,7 +44,7 @@ function Library:CreateWindow()
         end)
     end
 
-    -- [[ DISEÑO DEL MAIN ]]
+    -- [[ MAIN ]]
     Main.Name = "Main"
     Main.Parent = ScreenGui
     Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
@@ -57,94 +57,68 @@ function Library:CreateWindow()
     local MainStroke = Instance.new("UIStroke", Main)
     MainStroke.Thickness = 3
 
-    -- [[ DISEÑO DEL HEADER ]]
+    -- [[ HEADER ]]
     Header.Name = "Header"
     Header.Parent = Main
     Header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     Header.Size = UDim2.new(1, 0, 0, 35)
     Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 15)
-
     local Title = Instance.new("TextLabel", Header)
     Title.Text = "SCRIPT 😈 UNV 😈 LUIS"
-    Title.Size = UDim2.new(1, 0, 1, 0)
-    Title.BackgroundTransparency = 1
-    Title.Font = Enum.Font.LuckiestGuy
-    Title.TextSize = 17
-    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Size = UDim2.new(1, 0, 1, 0); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.LuckiestGuy; Title.TextSize = 17; Title.TextColor3 = Color3.new(1, 1, 1)
 
-    -- BOTÓN X (Cerrar)
+    -- BOTONES
     local Close = Instance.new("TextButton", Header)
-    Close.Size = UDim2.new(0, 20, 0, 20)
-    Close.Position = UDim2.new(1, -28, 0.5, -10)
-    Close.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-    Close.Text = "X"
-    Close.TextColor3 = Color3.new(1, 1, 1)
+    Close.Size = UDim2.new(0, 20, 0, 20); Close.Position = UDim2.new(1, -28, 0.5, -10); Close.BackgroundColor3 = Color3.fromRGB(180, 40, 40); Close.Text = "X"; Close.TextColor3 = Color3.new(1, 1, 1)
     Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
-    Close.MouseButton1Click:Connect(function()
-        Notify("Script Cerrado Correctamente ✅", Color3.new(1, 0, 0))
-        task.wait(0.5)
-        ScreenGui:Destroy()
-    end)
+    Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
-    -- BOTÓN MINIMIZAR (-)
     local Minimize = Instance.new("TextButton", Header)
-    Minimize.Size = UDim2.new(0, 20, 0, 20)
-    Minimize.Position = UDim2.new(1, -55, 0.5, -10)
-    Minimize.BackgroundColor3 = Color3.fromRGB(180, 130, 40)
-    Minimize.Text = "-"
-    Minimize.TextColor3 = Color3.new(1, 1, 1)
+    Minimize.Size = UDim2.new(0, 20, 0, 20); Minimize.Position = UDim2.new(1, -55, 0.5, -10); Minimize.BackgroundColor3 = Color3.fromRGB(180, 130, 40); Minimize.Text = "-"; Minimize.TextColor3 = Color3.new(1, 1, 1)
     Instance.new("UICorner", Minimize).CornerRadius = UDim.new(1, 0)
 
     local isMin = false
     Minimize.MouseButton1Click:Connect(function()
-        if not isMin then
-            Main:TweenSize(UDim2.new(0, 360, 0, 35), "Out", "Quart", 0.3, true)
-            Minimize.Text = "+"
-        else
-            Main:TweenSize(UDim2.new(0, 360, 0, 230), "Out", "Quart", 0.3, true)
-            Minimize.Text = "-"
-        end
+        Main:TweenSize(isMin and UDim2.new(0, 360, 0, 230) or UDim2.new(0, 360, 0, 35), "Out", "Quart", 0.3, true)
+        Minimize.Text = isMin and "-" or "+"
         isMin = not isMin
     end)
 
-    -- [[ SIDEBAR Y AVATAR - FIX SCROLL ]]
+    -- [[ SIDEBAR (IZQUIERDA) - AHORA IGUAL AL CONTAINER ]]
     Sidebar.Name = "Sidebar"
     Sidebar.Parent = Main
     Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     Sidebar.Position = UDim2.new(0, 8, 0, 42)
     Sidebar.Size = UDim2.new(0, 100, 1, -50)
+    Sidebar.ScrollBarThickness = 3 -- Grosor igual al de la derecha
+    Sidebar.ScrollBarImageColor3 = Color3.new(1, 1, 1) -- Color igual al de la derecha
     Sidebar.CanvasSize = UDim2.new(0, 0, 0, 0)
-    Sidebar.AutomaticCanvasSize = Enum.AutomaticSize.Y -- Habilitado para que se sienta el scroll
-    Sidebar.ScrollBarThickness = 2
-    Sidebar.ScrollBarImageColor3 = Color3.new(1, 1, 1)
+    Sidebar.AutomaticCanvasSize = Enum.AutomaticSize.Y -- Scroll automático activado
     Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
     local SidebarList = Instance.new("UIListLayout", Sidebar)
-    SidebarList.Padding = UDim.new(0, 4)
-    SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    SidebarList.Padding = UDim.new(0, 4); SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
     local AvatarFrame = Instance.new("Frame", Sidebar)
-    AvatarFrame.Size = UDim2.new(0, 40, 0, 40)
-    AvatarFrame.BackgroundTransparency = 1
+    AvatarFrame.Size = UDim2.new(0, 40, 0, 40); AvatarFrame.BackgroundTransparency = 1
     local AvatarImg = Instance.new("ImageLabel", AvatarFrame)
-    AvatarImg.Size = UDim2.new(1, 0, 1, 0)
-    AvatarImg.Image = Players:GetUserThumbnailAsync(LP.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+    AvatarImg.Size = UDim2.new(1, 0, 1, 0); AvatarImg.Image = Players:GetUserThumbnailAsync(LP.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
     Instance.new("UICorner", AvatarImg).CornerRadius = UDim.new(1, 0)
 
-    -- [[ CONTENEDOR DE FUNCIONES ]]
+    -- [[ CONTAINER (DERECHA) ]]
     Container.Name = "Container"
     Container.Parent = Main
     Container.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
     Container.Position = UDim2.new(0, 115, 0, 42)
     Container.Size = UDim2.new(1, -123, 1, -50)
-    Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
     Container.ScrollBarThickness = 3
     Container.ScrollBarImageColor3 = Color3.new(1, 1, 1)
+    Container.CanvasSize = UDim2.new(0, 0, 0, 0)
+    Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
     local ContainerList = Instance.new("UIListLayout", Container)
-    ContainerList.Padding = UDim.new(0, 10)
-    ContainerList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    ContainerList.Padding = UDim.new(0, 10); ContainerList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
-    -- [[ CICLO DE COLOR NEÓN ]]
+    -- CICLO NEÓN
     task.spawn(function()
         while task.wait(0.01) do
             if not ScreenGui.Parent then break end
@@ -154,55 +128,32 @@ function Library:CreateWindow()
         end
     end)
 
-    -- [[ EXPORTACIÓN DE MÉTODOS ]]
+    -- [[ MÉTODOS ]]
     local Elements = {}
 
     function Elements:CreateTab(name)
         local t = Instance.new("TextButton", Sidebar)
-        t.Size = UDim2.new(0.9, 0, 0, 24)
-        t.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        t.Text = name
-        t.TextColor3 = Color3.new(1, 1, 1)
-        t.Font = Enum.Font.GothamBold
-        t.TextSize = 9
+        t.Size = UDim2.new(0.9, 0, 0, 24); t.BackgroundColor3 = Color3.fromRGB(30, 30, 30); t.Text = name; t.TextColor3 = Color3.new(1, 1, 1); t.Font = Enum.Font.GothamBold; t.TextSize = 9
         Instance.new("UICorner", t).CornerRadius = UDim.new(0, 6)
-        t.MouseButton1Click:Connect(function() Notify("Abriendo: " .. name) end)
+        t.MouseButton1Click:Connect(function() Notify("Pestaña: "..name) end)
     end
 
     function Elements:CreateSwitch(text, callback)
         local callback = callback or function() end
         local Frame = Instance.new("Frame", Container)
-        Frame.Size = UDim2.new(0.9, 0, 0, 32)
-        Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        Frame.Size = UDim2.new(0.9, 0, 0, 32); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
         Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-        
         local Label = Instance.new("TextLabel", Frame)
-        Label.Text = text
-        Label.Size = UDim2.new(0.6, 0, 1, 0)
-        Label.Position = UDim2.new(0, 10, 0, 0)
-        Label.BackgroundTransparency = 1
-        Label.TextColor3 = Color3.new(1, 1, 1)
-        Label.Font = Enum.Font.GothamBold
-        Label.TextSize = 10
-        Label.TextXAlignment = Enum.TextXAlignment.Left
-
+        Label.Text = text; Label.Size = UDim2.new(0.6,0,1,0); Label.Position = UDim2.new(0,10,0,0); Label.BackgroundTransparency = 1; Label.TextColor3 = Color3.new(1,1,1); Label.Font = Enum.Font.GothamBold; Label.TextSize = 10; Label.TextXAlignment = Enum.TextXAlignment.Left
         local Toggle = Instance.new("TextButton", Frame)
-        Toggle.Size = UDim2.new(0, 38, 0, 20)
-        Toggle.Position = UDim2.new(1, -48, 0.5, -10)
-        Toggle.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-        Toggle.Text = ""
-        Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1, 0)
-        
+        Toggle.Size = UDim2.new(0,38,0,20); Toggle.Position = UDim2.new(1,-48,0.5,-10); Toggle.BackgroundColor3 = Color3.fromRGB(45,45,45); Toggle.Text = ""
+        Instance.new("UICorner", Toggle).CornerRadius = UDim.new(1,0)
         local Circle = Instance.new("Frame", Toggle)
-        Circle.Size = UDim2.new(0, 16, 0, 16)
-        Circle.Position = UDim2.new(0, 2, 0.5, -8)
-        Circle.BackgroundColor3 = Color3.new(1, 1, 1)
-        Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
-
+        Circle.Size = UDim2.new(0,16,0,16); Circle.Position = UDim2.new(0,2,0.5,-8); Circle.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", Circle).CornerRadius = UDim.new(1,0)
         local state = false
         Toggle.MouseButton1Click:Connect(function()
             state = not state
-            Circle:TweenPosition(state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8), "Out", "Quart", 0.2, true)
+            Circle:TweenPosition(state and UDim2.new(1,-18,0.5,-8) or UDim2.new(0,2,0.5,-8), "Out", "Quart", 0.2, true)
             Toggle.BackgroundColor3 = state and Color3.fromRGB(0, 180, 100) or Color3.fromRGB(45, 45, 45)
             pcall(callback, state)
         end)
@@ -210,60 +161,29 @@ function Library:CreateWindow()
 
     function Elements:CreateSlider(text, callback)
         local callback = callback or function() end
-        local min, max = 0, 100
         local Frame = Instance.new("Frame", Container)
-        Frame.Size = UDim2.new(0.9, 0, 0, 45)
-        Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        Frame.Size = UDim2.new(0.9, 0, 0, 45); Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
         Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-        
         local Label = Instance.new("TextLabel", Frame)
-        Label.Text = text .. " : 0"
-        Label.Size = UDim2.new(1, -20, 0, 20)
-        Label.Position = UDim2.new(0, 10, 0, 5)
-        Label.BackgroundTransparency = 1
-        Label.TextColor3 = Color3.new(1, 1, 1)
-        Label.Font = Enum.Font.GothamBold
-        Label.TextSize = 10
-        Label.TextXAlignment = Enum.TextXAlignment.Left
-
+        Label.Text = text .. " : 0"; Label.Size = UDim2.new(1,-20,0,20); Label.Position = UDim2.new(0,10,0,5); Label.BackgroundTransparency = 1; Label.TextColor3 = Color3.new(1,1,1); Label.Font = Enum.Font.GothamBold; Label.TextSize = 10; Label.TextXAlignment = Enum.TextXAlignment.Left
         local SliderBG = Instance.new("TextButton", Frame)
-        SliderBG.Size = UDim2.new(0.85, 0, 0, 6)
-        SliderBG.Position = UDim2.new(0.5, 0, 0, 32)
-        SliderBG.AnchorPoint = Vector2.new(0.5, 0.5)
-        SliderBG.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        SliderBG.Text = ""
+        SliderBG.Size = UDim2.new(0.85,0,0,6); SliderBG.Position = UDim2.new(0.5,0,0,32); SliderBG.AnchorPoint = Vector2.new(0.5,0.5); SliderBG.BackgroundColor3 = Color3.fromRGB(40,40,40); SliderBG.Text = ""
         Instance.new("UICorner", SliderBG)
-
         local Fill = Instance.new("Frame", SliderBG)
-        Fill.Size = UDim2.new(0, 0, 1, 0)
-        Fill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-        Instance.new("UICorner", Fill)
-
+        Fill.Size = UDim2.new(0,0,1,0); Fill.BackgroundColor3 = Color3.fromRGB(0, 150, 255); Instance.new("UICorner", Fill)
         local Knob = Instance.new("Frame", Fill)
-        Knob.Size = UDim2.new(0, 14, 0, 14)
-        Knob.AnchorPoint = Vector2.new(0.5, 0.5)
-        Knob.Position = UDim2.new(1, 0, 0.5, 0)
-        Knob.BackgroundColor3 = Color3.new(1, 1, 1)
-        Instance.new("UICorner", Knob).CornerRadius = UDim.new(1, 0)
-
+        Knob.Size = UDim2.new(0,14,0,14); Knob.AnchorPoint = Vector2.new(0.5,0.5); Knob.Position = UDim2.new(1,0,0.5,0); Knob.BackgroundColor3 = Color3.new(1,1,1); Instance.new("UICorner", Knob).CornerRadius = UDim.new(1,0)
         local dragging = false
         local function move(input)
             local pos = math.clamp((input.Position.X - SliderBG.AbsolutePosition.X) / SliderBG.AbsoluteSize.X, 0, 1)
             Fill.Size = UDim2.new(pos, 0, 1, 0)
-            local value = math.floor(min + (max - min) * pos)
+            local value = math.floor(0 + (100 - 0) * pos)
             Label.Text = text .. " : " .. value
             pcall(callback, value)
         end
-
-        SliderBG.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true end
-        end)
-        UserInputService.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
-        end)
-        UserInputService.InputChanged:Connect(function(input)
-            if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then move(input) end
-        end)
+        SliderBG.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true end end)
+        UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end end)
+        UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then move(input) end end)
     end
 
     return Elements
