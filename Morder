@@ -8,7 +8,7 @@ local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
-local VirtualUser = game:GetService("VirtualUser") -- Para el Anti-AFK
+local VirtualUser = game:GetService("VirtualUser")
 
 -- [[ VARIABLES GLOBALES ]]
 local FLYING = false
@@ -25,8 +25,6 @@ local targetLobbyID = ""
 -- Variables de Combate
 local autoClicker = false
 local autoWin = false
-local extraAuto = false
-local extraCodePath = ""
 
 -- Variables de Sistema
 local antiAfkEnabled = false
@@ -40,22 +38,7 @@ local function getRoot(char)
 	return char:FindFirstChild('HumanoidRootPart') or char:FindFirstChild('Torso') or char:FindFirstChild('UpperTorso')
 end
 
-local function GetObjectFromPath(path)
-    if path == "" then return nil end
-    local cleanPath = path:gsub(":FireServer%(.*%)", ""):gsub('game:GetService%("', ""):gsub('%)', ""):gsub('"', ""):gsub("'", ""):gsub(":WaitForChild", "."):gsub(":FindFirstChild", "."):gsub("%[", "."):gsub("%]", "")
-    local success, obj = pcall(function()
-        local parts = cleanPath:split(".")
-        local current = game
-        for i = 1, #parts do
-            if parts[i] == "game" or parts[i] == "" then continue end
-            current = current:FindFirstChild(parts[i]) or current:WaitForChild(parts[i], 0.5)
-        end
-        return current
-    end)
-    return success and obj or nil
-end
-
--- [[ LÓGICA ANTI-AFK (ESTILO IY) ]]
+-- [[ LÓGICA ANTI-AFK ]]
 LP.Idled:Connect(function()
     if antiAfkEnabled then
         VirtualUser:CaptureController()
@@ -178,6 +161,23 @@ fMov:AddButton("NOCLIP 👻", function()
     hud:Notify("Noclip: " .. tostring(noclipActive))
 end)
 
+-- SE MOVIÓ AQUÍ PARA QUE SIEMPRE ESTÉ VISIBLE
+fMov:AddButton("WALK FLING 🌀", function()
+    FLING_ENABLED = not FLING_ENABLED
+    task.spawn(function()
+        while FLING_ENABLED do
+            RunService.Heartbeat:Wait()
+            local root = getRoot(LP.Character)
+            if root then
+                local oldVel = root.Velocity
+                root.Velocity = oldVel * 10000 + Vector3.new(0, 10000, 0)
+                RunService.RenderStepped:Wait()
+                if root then root.Velocity = oldVel end
+            end
+        end
+    end)
+end)
+
 -- [[ CARPETA ID MANAGER ]]
 local fId = hud:AddFolder("ID MANAGER 🆔")
 fId:AddButton("COPIAR ID ACTUAL 📋", function()
@@ -210,66 +210,39 @@ fVis:AddButton("CICLO ILUMINACIÓN ☀️🌙", function()
     else Lighting.ClockTime = 12 Lighting.Brightness = 1 Lighting.GlobalShadows = true end
 end)
 
--- [[ CARPETA COMBATE ]]
-local fComb = hud:AddFolder("COMBATE 💀")
+-- [[ CARPETA COMBATE (FILTRADA POR ID) ]]
+if game.PlaceId == 14236123211 then
+    local fComb = hud:AddFolder("COMBATE 💀")
 
-fComb:AddButton("AUTO GOLPES 🥊", function()
-    autoClicker = not autoClicker
-    hud:Notify(autoClicker and "Golpes ON" or "Golpes OFF")
-    task.spawn(function()
-        while autoClicker do
-            pcall(function()
-                game:GetService("ReplicatedStorage").Events.DamageIncreaseOnClickEvent:FireServer()
-            end)
-            task.wait(0.01)
-        end
-    end)
-end)
-
-fComb:AddButton("AUTO WIN (PUSH) 🏆", function()
-    autoWin = not autoWin
-    hud:Notify(autoWin and "Auto-Win ON" or "Auto-Win OFF")
-    task.spawn(function()
-        while autoWin do
-            pcall(function()
-                game:GetService("ReplicatedStorage").Events.PushEvent:FireServer(true)
-            end)
-            task.wait(0.1)
-        end
-    end)
-end)
-
-fComb:AddTextBox("NUEVO CÓDIGO (Ruta)", function(v) extraCodePath = v end)
-fComb:AddButton("ACTIVAR CÓDIGO EXTRA ⚡", function()
-    extraAuto = not extraAuto
-    task.spawn(function()
-        while extraAuto do
-            local target = GetObjectFromPath(extraCodePath)
-            if target and target:IsA("RemoteEvent") then target:FireServer() end
-            task.wait(0.05)
-        end
-    end)
-end)
-
-fComb:AddButton("WALK FLING 🌀", function()
-    FLING_ENABLED = not FLING_ENABLED
-    task.spawn(function()
-        while FLING_ENABLED do
-            RunService.Heartbeat:Wait()
-            local root = getRoot(LP.Character)
-            if root then
-                local oldVel = root.Velocity
-                root.Velocity = oldVel * 10000 + Vector3.new(0, 10000, 0)
-                RunService.RenderStepped:Wait()
-                if root then root.Velocity = oldVel end
+    fComb:AddButton("AUTO GOLPES 🥊", function()
+        autoClicker = not autoClicker
+        hud:Notify(autoClicker and "Golpes ON" or "Golpes OFF")
+        task.spawn(function()
+            while autoClicker do
+                pcall(function()
+                    game:GetService("ReplicatedStorage").Events.DamageIncreaseOnClickEvent:FireServer()
+                end)
+                task.wait(0.01)
             end
-        end
+        end)
     end)
-end)
 
--- [[ CARPETA SISTEMA (NUEVO) ]]
+    fComb:AddButton("AUTO WIN (PUSH) 🏆", function()
+        autoWin = not autoWin
+        hud:Notify(autoWin and "Auto-Win ON" or "Auto-Win OFF")
+        task.spawn(function()
+            while autoWin do
+                pcall(function()
+                    game:GetService("ReplicatedStorage").Events.PushEvent:FireServer(true)
+                end)
+                task.wait(0.1)
+            end
+        end)
+    end)
+end
+
+-- [[ CARPETA SISTEMA ]]
 local fSys = hud:AddFolder("SISTEMA 🛠️")
-
 fSys:AddButton("ANTI-AFK 🚫💤", function()
     antiAfkEnabled = not antiAfkEnabled
     hud:Notify(antiAfkEnabled and "Anti-AFK Activado" or "Anti-AFK Desactivado")
@@ -293,9 +266,8 @@ fSys:AddButton("FPS BOOSTER (LAG FIX) 🚀", function()
     hud:Notify("Gráficos al mínimo: FPS estables")
 end)
 
--- [[ CARPETA GOD MODE (NUEVA) ]]
+-- [[ CARPETA GOD MODE ]]
 local fGod = hud:AddFolder("GOD MODE 🛡️")
-
 fGod:AddButton("GOD MODE (REGEN) 💉", function()
     godModeRegen = not godModeRegen
     hud:Notify(godModeRegen and "Regen God ON" or "Regen God OFF")
@@ -315,8 +287,7 @@ fGod:AddButton("INVISIBLE GOD 👻", function()
     hud:Notify("Modo Fantasma Activado")
     pcall(function()
         local char = LP.Character
-        local hum = char:WaitForChild("Humanoid")
-        char.Parent = nil -- Te saca de la jerarquía para el servidor pero existes localmente
+        char.Parent = nil
         char.Parent = workspace
     end)
 end)
@@ -328,7 +299,7 @@ fGod:AddButton("ANTI-VOID 🛡️", function()
         while antiVoidEnabled do
             pcall(function()
                 local root = getRoot(LP.Character)
-                if root and root.Position.Y < -50 then -- Si caes por debajo del mapa
+                if root and root.Position.Y < -50 then
                     root.Velocity = Vector3.new(0, 0, 0)
                     root.CFrame = CFrame.new(root.Position.X, 50, root.Position.Z)
                 end
@@ -338,4 +309,4 @@ fGod:AddButton("ANTI-VOID 🛡️", function()
     end)
 end)
 
-hud:Notify("LUIS SCRIPT - FULL UPDATE ✅")
+hud:Notify("LUIS SCRIPT - ACTUALIZADO ✅")
