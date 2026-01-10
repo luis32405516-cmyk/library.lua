@@ -1,4 +1,4 @@
--- [[ LUIS UNV - ELITE LIBRARY (FIX SLIDER INDEPENDIENTE) ]]
+-- [[ LUIS UNV - ELITE LIBRARY + AVATAR FIX ]]
 
 local Library = {}
 
@@ -24,6 +24,7 @@ function Library:CreateWindow()
     local Title = Instance.new("TextLabel", Header)
     Title.Text = "SCRIPT 😈 UNV 😈 LUIS"; Title.Size = UDim2.new(1, 0, 1, 0); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.LuckiestGuy; Title.TextSize = 17; Title.TextColor3 = Color3.new(1, 1, 1)
 
+    -- BOTONES CERRAR Y MINIMIZAR
     local Close = Instance.new("TextButton", Header)
     Close.Size = UDim2.new(0, 20, 0, 20); Close.Position = UDim2.new(1, -28, 0.5, -10); Close.BackgroundColor3 = Color3.fromRGB(180, 40, 40); Close.Text = "X"; Close.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
     Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
@@ -43,6 +44,15 @@ function Library:CreateWindow()
     Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
     local SidebarList = Instance.new("UIListLayout", Sidebar); SidebarList.Padding = UDim.new(0, 4); SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
+    -- [[ AQUÍ ESTÁ TU PINCHE FOTO MOR ]]
+    local AvatarCont = Instance.new("Frame", Sidebar)
+    AvatarCont.Size = UDim2.new(0, 50, 0, 50); AvatarCont.BackgroundTransparency = 1
+    local AvatarImg = Instance.new("ImageLabel", AvatarCont)
+    AvatarImg.Size = UDim2.new(1, 0, 1, 0); AvatarImg.BackgroundTransparency = 1
+    AvatarImg.Image = game:GetService("Players"):GetUserThumbnailAsync(game:GetService("Players").LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+    Instance.new("UICorner", AvatarImg).CornerRadius = UDim.new(1, 0)
+    local ImgStroke = Instance.new("UIStroke", AvatarImg); ImgStroke.Thickness = 2; ImgStroke.Color = Color3.new(1,1,1)
+
     local Container = Instance.new("Frame", Main)
     Container.Name = "Container"; Container.BackgroundColor3 = Color3.fromRGB(18, 18, 18); Container.Position = UDim2.new(0, 115, 0, 42); Container.Size = UDim2.new(1, -123, 1, -50)
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
@@ -51,7 +61,7 @@ function Library:CreateWindow()
         while task.wait(0.01) do
             if not ScreenGui.Parent then break end
             local c = Color3.fromHSV(tick() % 5 / 5, 0.8, 1)
-            MainStroke.Color = c; Title.TextColor3 = c
+            MainStroke.Color = c; Title.TextColor3 = c; ImgStroke.Color = c
         end
     end)
 
@@ -109,24 +119,9 @@ function Library:CreateWindow()
                 local val = math.floor(min + (max - min) * pos)
                 Label.Text = text .. " : " .. val; pcall(callback, val)
             end
-
-            SliderBG.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    isDragging = true; move()
-                end
-            end)
-
-            game:GetService("UserInputService").InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    isDragging = false
-                end
-            end)
-
-            game:GetService("UserInputService").InputChanged:Connect(function(input)
-                if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                    move()
-                end
-            end)
+            SliderBG.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then isDragging = true; move() end end)
+            game:GetService("UserInputService").InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then isDragging = false end end)
+            game:GetService("UserInputService").InputChanged:Connect(function(input) if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then move() end end)
         end
 
         function Elements:CreateTextBox(text, callback)
