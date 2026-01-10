@@ -81,7 +81,7 @@ function Library:CreateWindow()
     Close.TextColor3 = Color3.new(1, 1, 1)
     Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
     Close.MouseButton1Click:Connect(function()
-        Notify("Cerrando Sistema...", Color3.new(1, 0, 0))
+        Notify("Script Cerrado Correctamente ✅", Color3.new(1, 0, 0))
         task.wait(0.5)
         ScreenGui:Destroy()
     end)
@@ -107,15 +107,16 @@ function Library:CreateWindow()
         isMin = not isMin
     end)
 
-    -- [[ SIDEBAR Y AVATAR ]]
+    -- [[ SIDEBAR Y AVATAR - FIX SCROLL ]]
     Sidebar.Name = "Sidebar"
     Sidebar.Parent = Main
     Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     Sidebar.Position = UDim2.new(0, 8, 0, 42)
     Sidebar.Size = UDim2.new(0, 100, 1, -50)
     Sidebar.CanvasSize = UDim2.new(0, 0, 0, 0)
-    Sidebar.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    Sidebar.AutomaticCanvasSize = Enum.AutomaticSize.Y -- Habilitado para que se sienta el scroll
     Sidebar.ScrollBarThickness = 2
+    Sidebar.ScrollBarImageColor3 = Color3.new(1, 1, 1)
     Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
     local SidebarList = Instance.new("UIListLayout", Sidebar)
     SidebarList.Padding = UDim.new(0, 4)
@@ -137,6 +138,7 @@ function Library:CreateWindow()
     Container.Size = UDim2.new(1, -123, 1, -50)
     Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
     Container.ScrollBarThickness = 3
+    Container.ScrollBarImageColor3 = Color3.new(1, 1, 1)
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
     local ContainerList = Instance.new("UIListLayout", Container)
     ContainerList.Padding = UDim.new(0, 10)
