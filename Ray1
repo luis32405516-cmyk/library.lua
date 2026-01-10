@@ -1,4 +1,4 @@
--- [[ LUIS UNV - SCRIPT COMPLETO + ID MANAGER ]]
+-- [[ LUIS UNV - SCRIPT ELITE FINAL CON BOOSTER ]]
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray"))()
 local Window = Library:CreateWindow()
 
@@ -7,26 +7,33 @@ local LP = Players.LocalPlayer
 local RS = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
+local TeleportService = game:GetService("TeleportService")
 
+-- [[ VARIABLES DE ESTADO ]]
 local FLYING = false
 local iyflyspeed = 1
 local InfJump = false
+local noclipActive = false
+local FLING_ENABLED = false
 local ESP_Color = 0
+local XRAY_ENABLED = false
+local WalkSpeedValue = 16
+local AutoClickEnabled = false
 local targetLobby = ""
 
--- [ FLY IY INTACTO ]
+-- [ LÓGICA FLY MOBILE IY ]
 local function mobilefly()
     FLYING = true
     local char = LP.Character
     local root = char:WaitForChild("HumanoidRootPart")
     local camera = workspace.CurrentCamera
     local control = require(LP.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
-    local bv = Instance.new("BodyVelocity", root); bv.MaxForce = Vector3.new(9e9,9e9,9e9); bv.Velocity = Vector3.new(0,0,0)
-    local bg = Instance.new("BodyGyro", root); bg.MaxTorque = Vector3.new(9e9,9e9,9e9); bg.P = 1000
+    local bv = Instance.new("BodyVelocity", root); bv.Name = "IY_Velocity"; bv.MaxForce = Vector3.new(9e9,9e9,9e9); bv.Velocity = Vector3.new(0,0,0)
+    local bg = Instance.new("BodyGyro", root); bg.Name = "IY_Gyro"; bg.MaxTorque = Vector3.new(9e9,9e9,9e9); bg.P = 1000
     task.spawn(function()
         while FLYING do
             RS.RenderStepped:Wait()
-            char:FindFirstChildOfClass("Humanoid").PlatformStand = true
+            if char:FindFirstChildOfClass("Humanoid") then char:FindFirstChildOfClass("Humanoid").PlatformStand = true end
             bg.CFrame = camera.CFrame
             local dir = control:GetMoveVector()
             local vel = Vector3.new(0,0,0)
@@ -34,20 +41,62 @@ local function mobilefly()
             if dir.Z ~= 0 then vel = vel - camera.CFrame.LookVector * (dir.Z * (iyflyspeed * 50)) end
             bv.Velocity = vel
         end
-        bv:Destroy(); bg:Destroy(); char:FindFirstChildOfClass("Humanoid").PlatformStand = false
+        bv:Destroy(); bg:Destroy()
+        if char:FindFirstChildOfClass("Humanoid") then char:FindFirstChildOfClass("Humanoid").PlatformStand = false end
     end)
 end
 
--- [[ PESTAÑA MOVIMIENTO ]]
+---------------------------------------------------------
+-- [ APARTADO: MOVIMIENTO ]
+---------------------------------------------------------
 local Mov = Window:CreateTab("⚡ MOVIMIENTO")
-Mov:CreateSlider("WalkSpeed", 16, 300, function(v) if LP.Character then LP.Character.Humanoid.WalkSpeed = v end end)
-Mov:CreateSwitch("Fly Mobile (IY)", function(s) if s then mobilefly() else FLYING = false end end)
-Mov:CreateSlider("Fly Speed", 1, 10, function(v) iyflyspeed = v end)
-Mov:CreateSwitch("Inf Jump", function(s) InfJump = s end)
 
--- [[ PESTAÑA VISUALES ]]
+Mov:CreateSlider("Velocidad", 16, 500, function(v) 
+    WalkSpeedValue = v
+    if LP.Character then LP.Character.Humanoid.WalkSpeed = v end 
+end)
+
+Mov:CreateSwitch("Fly Mobile (IY)", function(s) if s then mobilefly() else FLYING = false end end)
+Mov:CreateSlider("Fly Speed", 1, 20, function(v) iyflyspeed = v end)
+
+Mov:CreateSwitch("Noclip 👻", function(estado)
+    noclipActive = estado
+    if noclipActive then
+        _G.Noc = RS.Stepped:Connect(function()
+            if LP.Character then
+                for _, v in pairs(LP.Character:GetDescendants()) do 
+                    if v:IsA("BasePart") then v.CanCollide = false end 
+                end
+            end
+        end)
+    else
+        if _G.Noc then _G.Noc:Disconnect() end
+    end
+end)
+
+Mov:CreateSwitch("Infinite Jump 🦘", function(s) InfJump = s end)
+
+Mov:CreateSwitch("Walk Fling 🌀", function(estado)
+    FLING_ENABLED = estado
+    task.spawn(function()
+        while FLING_ENABLED do
+            RS.Heartbeat:Wait()
+            if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
+                local root = LP.Character.HumanoidRootPart
+                local oldVel = root.Velocity
+                root.Velocity = oldVel * 10000 + Vector3.new(0, 10000, 0)
+                RS.RenderStepped:Wait()
+                if root then root.Velocity = oldVel end
+            end
+        end
+    end)
+end)
+
+---------------------------------------------------------
+-- [ APARTADO: VISUALES ]
+---------------------------------------------------------
 local Vis = Window:CreateTab("👁️ VISUALES")
-Vis:CreateSwitch("ESP Maestro", function(s)
+Vis:CreateSwitch("ESP Maestro 🌈", function(s)
     _G.ESP = s
     task.spawn(function()
         while _G.ESP do
@@ -55,7 +104,7 @@ Vis:CreateSwitch("ESP Maestro", function(s)
             for _, p in pairs(Players:GetPlayers()) do
                 if p ~= LP and p.Character then
                     local hl = p.Character:FindFirstChild("LuisESP") or Instance.new("Highlight", p.Character)
-                    hl.Name = "LuisESP"; hl.FillColor = color
+                    hl.Name = "LuisESP"; hl.FillColor = color; hl.OutlineColor = Color3.new(1,1,1)
                 end
             end
             task.wait()
@@ -63,21 +112,91 @@ Vis:CreateSwitch("ESP Maestro", function(s)
         for _, p in pairs(Players:GetPlayers()) do if p.Character and p.Character:FindFirstChild("LuisESP") then p.Character.LuisESP:Destroy() end end
     end)
 end)
-Vis:CreateSlider("Color ESP (0=Rainbow)", 0, 100, function(v) ESP_Color = v end)
-Vis:CreateSlider("Hora", 0, 24, function(v) Lighting.ClockTime = v end)
 
--- [[ PESTAÑA ID MANAGER ]]
-local Idm = Window:CreateTab("🆔 ID MANAGER")
-Idm:CreateButton("COPIAR ID ACTUAL 📋", function() setclipboard(tostring(game.PlaceId)) end)
-Idm:CreateTextBox("ID LOBBY", function(v) targetLobby = v end)
-Idm:CreateButton("VOLVER AL LOBBY 🏠", function() if targetLobby ~= "" then game:GetService("TeleportService"):Teleport(tonumber(targetLobby), LP) end end)
-Idm:CreateButton("SERVER HOP 🚀", function()
+Vis:CreateSlider("Color ESP (0=Rainbow)", 0, 100, function(v) ESP_Color = v end)
+
+Vis:CreateSwitch("X-Ray (Paredes) 💎", function(estado)
+    XRAY_ENABLED = estado
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") then
+            if XRAY_ENABLED then
+                if v.Transparency < 0.5 then v.Transparency = 0.5 end
+            else
+                v.Transparency = 0
+            end
+        end
+    end
+end)
+
+Vis:CreateSlider("Hora del Mundo ☀️🌙", 0, 24, function(v) Lighting.ClockTime = v end)
+
+---------------------------------------------------------
+-- [ APARTADO: SERVER ]
+---------------------------------------------------------
+local Ser = Window:CreateTab("🌐 SERVER")
+Ser:CreateButton("REJOIN 🔄", function() TeleportService:Teleport(game.PlaceId, LP) end)
+Ser:CreateButton("SERVER HOP 🚀", function()
     local servers = {}
     local res = game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Desc&limit=100")
     for _, s in pairs(game:GetService("HttpService"):JSONDecode(res).data) do
         if s.playing < s.maxPlayers and s.id ~= game.JobId then table.insert(servers, s.id) end
     end
-    if #servers > 0 then game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LP) end
+    if #servers > 0 then TeleportService:TeleportToPlaceInstance(game.PlaceId, servers[math.random(1, #servers)], LP) end
+end)
+Ser:CreateButton("COPIAR ID JUEGO 📋", function() setclipboard(tostring(game.PlaceId)) end)
+Ser:CreateTextBox("ID LOBBY", function(v) targetLobby = v end)
+Ser:CreateButton("IR AL LOBBY 🏠", function() if targetLobby ~= "" then TeleportService:Teleport(tonumber(targetLobby), LP) end end)
+
+---------------------------------------------------------
+-- [ APARTADO: SISTEMA ]
+---------------------------------------------------------
+local Sys = Window:CreateTab("🛠️ SISTEMA")
+
+Sys:CreateSwitch("FPS Booster 🚀", function(estado)
+    if estado then
+        for _, v in pairs(game:GetDescendants()) do
+            if v:IsA("Part") or v:IsA("UnionOperation") or v:IsA("MeshPart") then
+                v.Material = Enum.Material.SmoothPlastic
+                v.Reflectance = 0
+            elseif v:IsA("Decal") then
+                v.Transparency = 1
+            end
+        end
+        Lighting.GlobalShadows = false
+        Lighting.FogEnd = 9e9
+        settings().Rendering.QualityLevel = 1
+    else
+        print("Reinicia el juego para quitar el booster")
+    end
 end)
 
+Sys:CreateSwitch("Auto Clicker 🖱️", function(estado)
+    AutoClickEnabled = estado
+    task.spawn(function()
+        while AutoClickEnabled do
+            game:GetService("VirtualUser"):CaptureController()
+            game:GetService("VirtualUser"):ClickButton1(Vector2.new(0, 0))
+            task.wait(0.01)
+        end
+    end)
+end)
+
+Sys:CreateSwitch("Anti-AFK 🚫💤", function(estado)
+    if estado then
+        _G.AntiAfk = LP.Idled:Connect(function()
+            game:GetService("VirtualUser"):CaptureController()
+            game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+        end)
+    else
+        if _G.AntiAfk then _G.AntiAfk:Disconnect() end
+    end
+end)
+
+---------------------------------------------------------
+-- [ EVENTOS ]
+---------------------------------------------------------
 UIS.JumpRequest:Connect(function() if InfJump and LP.Character then LP.Character.Humanoid:ChangeState("Jumping") end end)
+
+LP.CharacterAdded:Connect(function(char)
+    char:WaitForChild("Humanoid").WalkSpeed = WalkSpeedValue
+end)
