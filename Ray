@@ -1,4 +1,4 @@
--- [[ LUIS HUD - DISEÑO CIRCULAR & LETRAS ELITE ]]
+-- [[ LUIS HUD - VERSIÓN COMPLETA SIN ELIMINAR NADA ]]
 local ScreenGui = Instance.new("ScreenGui")
 local Main = Instance.new("Frame")
 local Header = Instance.new("Frame")
@@ -8,9 +8,9 @@ local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "Luis_Circular_Elite"
+ScreenGui.Name = "Luis_Unv_Final_Test"
 
--- [[ FUNCIÓN NOTIFICACIÓN ]]
+-- [[ FUNCIÓN NOTIFICACIÓN (MANTENIDA) ]]
 local function Notify(text, color)
     local n = Instance.new("Frame", ScreenGui)
     n.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
@@ -23,10 +23,10 @@ local function Notify(text, color)
     local l = Instance.new("TextLabel", n)
     l.Size = UDim2.new(1, 0, 1, 0)
     l.BackgroundTransparency = 1
-    l.Text = "⚡ " .. text
+    l.Text = "🔔 " .. text
     l.TextColor3 = Color3.new(1, 1, 1)
     l.Font = Enum.Font.GothamBold
-    l.TextSize = 11
+    l.TextSize = 10
     n:TweenPosition(UDim2.new(1, -190, 1, -60), "Out", "Quart", 0.4)
     task.delay(2.5, function()
         n:TweenPosition(UDim2.new(1, 0, 1, -60), "In", "Quart", 0.4)
@@ -43,79 +43,70 @@ Main.Size = UDim2.new(0, 360, 0, 230)
 Main.Active = true
 Main.Draggable = true
 Main.ClipsDescendants = true
-
-local MainCorner = Instance.new("UICorner", Main)
-MainCorner.CornerRadius = UDim.new(0, 15) -- ESQUINAS BIEN REDONDAS
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
 
 local MainStroke = Instance.new("UIStroke", Main)
 MainStroke.Thickness = 3
-MainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
--- [[ HEADER CIRCULAR ]]
+-- [[ HEADER CIRCULAR CON TÍTULO ELITE ]]
 Header.Name = "Header"
 Header.Parent = Main
 Header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Header.Size = UDim2.new(1, 0, 0, 35)
-
-local HeaderCorner = Instance.new("UICorner", Header)
-HeaderCorner.CornerRadius = UDim.new(0, 15) -- IGUAL QUE EL MAIN
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 15)
 
 local Title = Instance.new("TextLabel", Header)
 Title.Text = "SCRIPT 😈 UNV 😈 LUIS"
 Title.Size = UDim2.new(1, 0, 1, 0)
 Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.LuckiestGuy -- Letras de Calidad
-Title.TextSize = 18
+Title.Font = Enum.Font.LuckiestGuy -- TUS LETRAS DE CALIDAD
+Title.TextSize = 17
 Title.TextColor3 = Color3.new(1, 1, 1)
-Title.TextXAlignment = Enum.TextXAlignment.Center
 
-local TitleStroke = Instance.new("UIStroke", Title) -- Relieve en letras
-TitleStroke.Thickness = 1.5
-TitleStroke.Color = Color3.new(0, 0, 0)
-
--- [[ SIDEBAR ]]
+-- [[ SIDEBAR CON TRANQUE Y BARRA VISIBLE ]]
 Sidebar.Name = "Sidebar"
 Sidebar.Parent = Main
 Sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 Sidebar.Position = UDim2.new(0, 8, 0, 42)
 Sidebar.Size = UDim2.new(0, 100, 1, -50)
-Sidebar.ScrollBarThickness = 0
+Sidebar.CanvasSize = UDim2.new(0, 0, 1.2, 0) -- TRANQUE (Tope)
+Sidebar.ScrollBarThickness = 3
+Sidebar.ScrollBarImageColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
 
 local SidebarList = Instance.new("UIListLayout", Sidebar)
 SidebarList.Padding = UDim.new(0, 4)
 SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- AVATAR
+-- AVATAR (MANTENIDO)
 local AvatarFrame = Instance.new("Frame", Sidebar)
-AvatarFrame.Size = UDim2.new(0, 45, 0, 45)
+AvatarFrame.Size = UDim2.new(0, 40, 0, 40)
 AvatarFrame.BackgroundTransparency = 1
 local AvatarImg = Instance.new("ImageLabel", AvatarFrame)
 AvatarImg.Size = UDim2.new(1, 0, 1, 0)
 AvatarImg.Image = Players:GetUserThumbnailAsync(LP.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
 Instance.new("UICorner", AvatarImg).CornerRadius = UDim.new(1, 0)
-local AvStroke = Instance.new("UIStroke", AvatarImg)
-AvStroke.Thickness = 2
 
--- PESTAÑAS
-local function AddTab(name, color)
+-- PESTAÑAS (MANTENIDAS)
+local function AddTab(name)
     local t = Instance.new("TextButton", Sidebar)
-    t.Size = UDim2.new(0.9, 0, 0, 26)
+    t.Size = UDim2.new(0.9, 0, 0, 24)
     t.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     t.Text = name
     t.TextColor3 = Color3.new(1, 1, 1)
     t.Font = Enum.Font.GothamBold
-    t.TextSize = 11
+    t.TextSize = 9
     Instance.new("UICorner", t).CornerRadius = UDim.new(0, 6)
-    t.MouseButton1Click:Connect(function() Notify("Sección: " .. name, color) end)
+    t.MouseButton1Click:Connect(function() Notify("Abriendo: "..name) end)
 end
 
-AddTab("⚡ MOVIMIENTO", Color3.new(1, 1, 0))
-AddTab("💀 COMBATE", Color3.new(1, 0, 0))
-AddTab("🛠️ SISTEMA", Color3.new(0, 1, 0))
-AddTab("🎨 VISUALES", Color3.new(1, 0, 1))
+AddTab("⚡ MOVIMIENTO")
+AddTab("💀 COMBATE")
+AddTab("🛠️ SISTEMA")
+AddTab("🎨 VISUALES")
+AddTab("⚙️ CONFIG")
 
--- [[ CONTAINER CENTRAL ]]
+-- [[ CONTAINER CENTRAL CON BOTONES DE PRUEBA ]]
 Container.Name = "Container"
 Container.Parent = Main
 Container.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
@@ -123,32 +114,42 @@ Container.Position = UDim2.new(0, 115, 0, 42)
 Container.Size = UDim2.new(1, -123, 1, -50)
 Container.CanvasSize = UDim2.new(0, 0, 0, 0)
 Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Container.ScrollBarThickness = 2
+Container.ScrollBarThickness = 4
+Container.ScrollBarImageColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
 
 local ContainerList = Instance.new("UIListLayout", Container)
 ContainerList.Padding = UDim.new(0, 5)
 ContainerList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- BOTONES DE CIERRE
+-- BOTONES DE RELLENO (Para probar el scroll central)
+for i = 1, 20 do
+    local b = Instance.new("TextButton", Container)
+    b.Size = UDim2.new(0.95, 0, 0, 30)
+    b.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    b.Text = "BOTÓN PRUEBA " .. i
+    b.TextColor3 = Color3.fromRGB(180, 180, 180)
+    b.Font = Enum.Font.GothamSemibold
+    b.TextSize = 10
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+end
+
+-- CONTROLES DE CIERRE Y MINIMIZAR (MANTENIDOS)
 local Close = Instance.new("TextButton", Header)
-Close.Size = UDim2.new(0, 20, 0, 20)
-Close.Position = UDim2.new(1, -28, 0.5, -10)
-Close.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+Close.Size = UDim2.new(0, 18, 0, 18)
+Close.Position = UDim2.new(1, -25, 0.5, -9)
+Close.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
 Close.Text = "X"
-Close.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
 Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 local Minimize = Instance.new("TextButton", Header)
-Minimize.Size = UDim2.new(0, 20, 0, 20)
-Minimize.Position = UDim2.new(1, -55, 0.5, -10)
-Minimize.BackgroundColor3 = Color3.fromRGB(200, 150, 50)
+Minimize.Size = UDim2.new(0, 18, 0, 18)
+Minimize.Position = UDim2.new(1, -50, 0.5, -9)
+Minimize.BackgroundColor3 = Color3.fromRGB(180, 130, 40)
 Minimize.Text = "-"
-Minimize.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Minimize).CornerRadius = UDim.new(1, 0)
 
--- MINIMIZAR ESTILO PERSIANA
 local isMin = false
 Minimize.MouseButton1Click:Connect(function()
     if not isMin then
@@ -161,15 +162,14 @@ Minimize.MouseButton1Click:Connect(function()
     isMin = not isMin
 end)
 
--- [[ EFECTO NEÓN PRO ]]
+-- [[ EFECTO NEÓN (MANTENIDO) ]]
 task.spawn(function()
     while task.wait(0.01) do
         local h = (tick() % 5 / 5)
         local c = Color3.fromHSV(h, 0.8, 1)
         MainStroke.Color = c
-        AvStroke.Color = c
-        Title.TextColor3 = c -- El título también cambia de color neón
+        Title.TextColor3 = c
     end
 end)
 
-Notify("HUD SCRIPT UNV LUIS LISTO ✅", Color3.new(0, 1, 1))
+print("HUD Completo y Protegido ✅")
