@@ -1,95 +1,171 @@
--- [[ SCRIPT LUIS UNV - MOVIMIENTO COMPLETO ]]
+-- [[ LUIS UNV - SCRIPT DEFINITIVO ]]
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray"))()
 local Window = Library:CreateWindow()
 
-local Player = game.Players.LocalPlayer
-local Character = Player.Character or Player.CharacterAdded:Wait()
-local Humanoid = Character:WaitForChild("Humanoid")
+local Players = game:GetService("Players")
+local LP = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
 
--- Variables de estado
-local InfiniteJump = false
-local Noclip = false
-local Flying = false
-local FlySpeed = 50
+-- [[ VARIABLES DE ESTADO ]]
+local FLYING = false
+local iyflyspeed = 1
+local noclipActive = false
+local InfJumpEnabled = false
+local WalkSpeedValue = 16
+local ESP_ENABLED = false
+local FLING_ENABLED = false
+
+-- [[ FUNCIONES DE APOYO ]]
+local function getRoot(char)
+    return char:FindFirstChild('HumanoidRootPart') or char:FindFirstChild('Torso') or char:FindFirstChild('UpperTorso')
+end
+
+-- [[ LÓGICA FLY MOBILE (TU CÓDIGO) ]]
+local function unmobilefly()
+    FLYING = false
+    local root = getRoot(LP.Character)
+    if root:FindFirstChild("IY_Velocity") then root["IY_Velocity"]:Destroy() end
+    if root:FindFirstChild("IY_Gyro") then root["IY_Gyro"]:Destroy() end
+    if LP.Character:FindFirstChildWhichIsA("Humanoid") then
+        LP.Character:FindFirstChildWhichIsA("Humanoid").PlatformStand = false
+    end
+end
+
+local function mobilefly()
+    unmobilefly()
+    FLYING = true
+    local char = LP.Character
+    local root = getRoot(char)
+    local camera = workspace.CurrentCamera
+    local controlModule = require(LP.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
+    
+    local bv = Instance.new("BodyVelocity", root)
+    bv.Name = "IY_Velocity"
+    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    bv.Velocity = Vector3.new(0, 0, 0)
+
+    local bg = Instance.new("BodyGyro", root)
+    bg.Name = "IY_Gyro"
+    bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    bg.P = 1000
+    bg.D = 50
+
+    task.spawn(function()
+        while FLYING do
+            RunService.RenderStepped:Wait()
+            if char and char.Parent and root:FindFirstChild("IY_Velocity") then
+                char:FindFirstChildWhichIsA("Humanoid").PlatformStand = true
+                root["IY_Gyro"].CFrame = camera.CFrame
+                local direction = controlModule:GetMoveVector()
+                local flyVelocity = Vector3.new(0,0,0)
+                if direction.X ~= 0 then flyVelocity = flyVelocity + camera.CFrame.RightVector * (direction.X * (iyflyspeed * 50)) end
+                if direction.Z ~= 0 then flyVelocity = flyVelocity - camera.CFrame.LookVector * (direction.Z * (iyflyspeed * 50)) end
+                root["IY_Velocity"].Velocity = flyVelocity
+            end
+        end
+    end)
+end
 
 ---------------------------------------------------------
 -- [ APARTADO: MOVIMIENTO ]
 ---------------------------------------------------------
 Window:CreateTab("⚡ MOVIMIENTO")
 
--- 1. VELOCIDAD
-Window:CreateSlider("Velocidad", function(valor)
-    Humanoid.WalkSpeed = valor
+Window:CreateSlider("Velocidad", function(v)
+    WalkSpeedValue = v
+    if LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
+        LP.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = v
+    end
 end)
 
--- 2. SALTO INFINITO
-Window:CreateSwitch("Salto Infinito", function(estado)
-    InfiniteJump = estado
-    game:GetService("UserInputService").JumpRequest:Connect(function()
-        if InfiniteJump then
-            Humanoid:ChangeState("Jumping")
-        end
-    end)
+Window:CreateSwitch("Fly Mobile (IY)", function(estado)
+    if estado then mobilefly() else unmobilefly() end
 end)
 
--- 3. NOCLIP (Atravesar Paredes)
-Window:CreateSwitch("Noclip", function(estado)
-    Noclip = estado
-    game:GetService("RunService").Stepped:Connect(function()
-        if Noclip and Character then
-            for _, part in pairs(Character:GetDescendants()) do
-                if part:IsA("BasePart") and part.CanCollide then
-                    part.CanCollide = false
+Window:CreateSlider("Fly Speed", function(v)
+    iyflyspeed = v
+end)
+
+Window:CreateSwitch("Noclip 👻", function(estado)
+    noclipActive = estado
+    if noclipActive then
+        _G.Noc = RunService.Stepped:Connect(function()
+            if LP.Character then
+                for _, v in pairs(LP.Character:GetDescendants()) do 
+                    if v:IsA("BasePart") then v.CanCollide = false end 
                 end
             end
+        end)
+    else
+        if _G.Noc then _G.Noc:Disconnect() end
+    end
+end)
+
+Window:CreateSwitch("Infinite Jump 🦘", function(estado)
+    InfJumpEnabled = estado
+end)
+
+Window:CreateSwitch("Walk Fling 🌀", function(estado)
+    FLING_ENABLED = estado
+    task.spawn(function()
+        while FLING_ENABLED do
+            RunService.Heartbeat:Wait()
+            local root = getRoot(LP.Character)
+            if root then
+                local oldVel = root.Velocity
+                root.Velocity = oldVel * 10000 + Vector3.new(0, 10000, 0)
+                RunService.RenderStepped:Wait()
+                if root then root.Velocity = oldVel end
+            end
         end
     end)
 end)
 
--- 4. FLY (El que funcionaba)
-Window:CreateSwitch("Volar (Fly)", function(estado)
-    Flying = estado
-    if Flying then
-        local TFrame = Character:WaitForChild("HumanoidRootPart")
-        local Pos = Instance.new("BodyPosition", TFrame)
-        local Gyro = Instance.new("BodyGyro", TFrame)
-        Pos.Name = "LuisFlyPos"
-        Pos.maxForce = Vector3.new(math.huge, math.huge, math.huge)
-        Pos.position = TFrame.Position
-        Gyro.Name = "LuisFlyGyro"
-        Gyro.maxTorque = Vector3.new(math.huge, math.huge, math.huge)
-        Gyro.cframe = TFrame.CFrame
-        
+---------------------------------------------------------
+-- [ APARTADO: VISUALES ]
+---------------------------------------------------------
+Window:CreateTab("👁️ VISUALES")
+
+Window:CreateSwitch("ESP Rainbow 🌈", function(estado)
+    ESP_ENABLED = estado
+    if ESP_ENABLED then
         task.spawn(function()
-            while Flying do
-                local Camera = workspace.CurrentCamera
-                Pos.position = TFrame.Position + (Camera.CFrame.LookVector * FlySpeed / 50)
-                Gyro.cframe = Camera.CFrame
+            while ESP_ENABLED do
+                local color = Color3.fromHSV((tick() * 0.5) % 1, 1, 1)
+                for _, player in pairs(Players:GetPlayers()) do
+                    if player ~= LP and player.Character then
+                        local hl = player.Character:FindFirstChild("IY_ESP") or Instance.new("Highlight", player.Character)
+                        hl.Name = "IY_ESP"
+                        hl.FillColor = color
+                        hl.OutlineColor = Color3.new(1, 1, 1)
+                        hl.FillTransparency = 0.5
+                    end
+                end
                 task.wait()
             end
-            if Pos then Pos:Destroy() end
-            if Gyro then Gyro:Destroy() end
         end)
     else
-        if Character.HumanoidRootPart:FindFirstChild("LuisFlyPos") then
-            Character.HumanoidRootPart.LuisFlyPos:Destroy()
-        end
-        if Character.HumanoidRootPart:FindFirstChild("LuisFlyGyro") then
-            Character.HumanoidRootPart.LuisFlyGyro:Destroy()
+        for _, player in pairs(Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("IY_ESP") then 
+                player.Character.IY_ESP:Destroy() 
+            end
         end
     end
 end)
 
--- Ajuste de velocidad para el Fly
-Window:CreateSlider("Velocidad Vuelo", function(valor)
-    FlySpeed = valor
+---------------------------------------------------------
+-- [ EVENTOS GLOBALES ]
+---------------------------------------------------------
+UserInputService.JumpRequest:Connect(function()
+    if InfJumpEnabled then
+        local hum = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum:ChangeState("Jumping") end
+    end
 end)
 
----------------------------------------------------------
-
--- Actualizar referencias
-Player.CharacterAdded:Connect(function(newChar)
-    Character = newChar
-    Humanoid = newChar:WaitForChild("Humanoid")
+LP.CharacterAdded:Connect(function(char)
+    char:WaitForChild("Humanoid").WalkSpeed = WalkSpeedValue
 end)
