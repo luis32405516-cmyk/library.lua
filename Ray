@@ -1,12 +1,34 @@
--- [[ LUIS UNV - ELITE LIBRARY + AVATAR FIX ]]
+-- [[ LUIS UNV - ELITE LIBRARY + AVATAR + SOUNDS & NOTIFY ]]
 
 local Library = {}
+
+-- Función interna para sonidos (rbxassetid)
+local function PlaySound(id)
+    local s = Instance.new("Sound", game:GetService("SoundService"))
+    s.SoundId = "rbxassetid://"..tostring(id)
+    s.Volume = 0.5
+    s:Play()
+    s.Ended:Connect(function() s:Destroy() end)
+end
+
+-- Función interna para notificaciones
+local function SendNotify(title, text)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = 2
+    })
+end
 
 if game:GetService("CoreGui"):FindFirstChild("Luis_Elite_SafeClose") then
     game:GetService("CoreGui"):FindFirstChild("Luis_Elite_SafeClose"):Destroy()
 end
 
 function Library:CreateWindow()
+    -- Sonido y aviso al cargar
+    PlaySound(5234383442)
+    SendNotify("LUIS UNV", "Script Cargado 😈")
+
     local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
     ScreenGui.Name = "Luis_Elite_SafeClose"
 
@@ -24,7 +46,6 @@ function Library:CreateWindow()
     local Title = Instance.new("TextLabel", Header)
     Title.Text = "SCRIPT 😈 UNV 😈 LUIS"; Title.Size = UDim2.new(1, 0, 1, 0); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.LuckiestGuy; Title.TextSize = 17; Title.TextColor3 = Color3.new(1, 1, 1)
 
-    -- BOTONES CERRAR Y MINIMIZAR
     local Close = Instance.new("TextButton", Header)
     Close.Size = UDim2.new(0, 20, 0, 20); Close.Position = UDim2.new(1, -28, 0.5, -10); Close.BackgroundColor3 = Color3.fromRGB(180, 40, 40); Close.Text = "X"; Close.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
     Close.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
@@ -35,6 +56,7 @@ function Library:CreateWindow()
     local isMin = false
     Minimize.MouseButton1Click:Connect(function()
         isMin = not isMin
+        PlaySound(12222242)
         Main:TweenSize(isMin and UDim2.new(0, 360, 0, 35) or UDim2.new(0, 360, 0, 230), "Out", "Quart", 0.3, true)
         Minimize.Text = isMin and "+" or "-"
     end)
@@ -44,7 +66,6 @@ function Library:CreateWindow()
     Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
     local SidebarList = Instance.new("UIListLayout", Sidebar); SidebarList.Padding = UDim.new(0, 4); SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
-    -- [[ AQUÍ ESTÁ TU PINCHE FOTO MOR ]]
     local AvatarCont = Instance.new("Frame", Sidebar)
     AvatarCont.Size = UDim2.new(0, 50, 0, 50); AvatarCont.BackgroundTransparency = 1
     local AvatarImg = Instance.new("ImageLabel", AvatarCont)
@@ -80,6 +101,7 @@ function Library:CreateWindow()
         if FirstTab then TabPage.Visible = true; t.BackgroundColor3 = Color3.fromRGB(50, 50, 50); FirstTab = false end
 
         t.MouseButton1Click:Connect(function()
+            PlaySound(12222242)
             for _, v in pairs(Container:GetChildren()) do if v:IsA("ScrollingFrame") then v.Visible = false end end
             for _, v in pairs(Sidebar:GetChildren()) do if v:IsA("TextButton") then v.BackgroundColor3 = Color3.fromRGB(30, 30, 30) end end
             TabPage.Visible = true; t.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -89,7 +111,11 @@ function Library:CreateWindow()
 
         function Elements:CreateButton(text, callback)
             local b = Instance.new("TextButton", TabPage); b.Size = UDim2.new(0.95, 0, 0, 30); b.BackgroundColor3 = Color3.fromRGB(35, 35, 35); b.Text = text; b.TextColor3 = Color3.new(1, 1, 1); b.Font = Enum.Font.GothamBold; b.TextSize = 10; Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
-            b.MouseButton1Click:Connect(callback)
+            b.MouseButton1Click:Connect(function()
+                PlaySound(4548745567)
+                SendNotify("Ejecutado", text)
+                pcall(callback)
+            end)
         end
 
         function Elements:CreateSwitch(text, callback)
@@ -100,6 +126,8 @@ function Library:CreateWindow()
             local state = false
             Toggle.MouseButton1Click:Connect(function()
                 state = not state
+                PlaySound(6895079853)
+                SendNotify(text, state and "Activado ✅" or "Desactivado ❌")
                 Circle:TweenPosition(state and UDim2.new(1,-18,0.5,-8) or UDim2.new(0,2,0.5,-8), "Out", "Quart", 0.2, true)
                 Toggle.BackgroundColor3 = state and Color3.fromRGB(0, 180, 100) or Color3.fromRGB(45, 45, 45); pcall(callback, state)
             end)
