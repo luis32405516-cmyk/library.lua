@@ -1,43 +1,105 @@
--- [[ SCRIPT DE PRUEBA TOTAL - LUIS ELITE ]]
+-- [[ SCRIPT COMPLETO - LUIS UNV ]]
 
--- Cargamos la librería desde tu enlace
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray"))()
-
--- Creamos la ventana (Esto activa el HUD, el Neón y el sistema Anti-Multi)
 local Window = Library:CreateWindow()
 
--- [[ PESTAÑA 1: MOVIMIENTO ]]
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local Root = Character:WaitForChild("HumanoidRootPart")
+
+-- [[ VARIABLES DE ESTADO ]]
+local Noclip = false
+local InfiniteJump = false
+local PosicionGuardada = nil
+
+-- [[ PESTAÑA: MOVIMIENTO ]]
 Window:CreateTab("⚡ MOVIMIENTO")
-Window:CreateSlider("WalkSpeed", function(v) end)
-Window:CreateSlider("JumpPower", function(v) end)
-Window:CreateSlider("HipHeight", function(v) end)
-Window:CreateSwitch("Noclip Mode", function(s) end)
-Window:CreateSwitch("Infinite Jump", function(s) end)
 
--- [[ PESTAÑA 2: COMBATE ]]
+Window:CreateSlider("Velocidad", function(valor)
+    Humanoid.WalkSpeed = valor
+end)
+
+Window:CreateSlider("Salto", function(valor)
+    Humanoid.JumpPower = valor
+end)
+
+Window:CreateSwitch("Noclip", function(estado)
+    Noclip = estado
+    game:GetService("RunService").Stepped:Connect(function()
+        if Noclip and Character then
+            for _, part in pairs(Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end
+    end)
+end)
+
+Window:CreateSwitch("Salto Infinito", function(estado)
+    InfiniteJump = estado
+    game:GetService("UserInputService").JumpRequest:Connect(function()
+        if InfiniteJump then
+            Humanoid:ChangeState("Jumping")
+        end
+    end)
+end)
+
+-- [[ PESTAÑA: TELEPORT (NUEVA) ]]
+Window:CreateTab("📍 TELEPORT")
+
+Window:CreateSwitch("Guardar Ubicación", function(estado)
+    if estado then
+        PosicionGuardada = Root.CFrame
+        print("Ubicación Guardada ✅")
+    end
+end)
+
+Window:CreateSwitch("Teletransportarse", function(estado)
+    if estado and PosicionGuardada then
+        Root.CFrame = PosicionGuardada
+    end
+end)
+
+-- [[ PESTAÑA: COMBATE ]]
 Window:CreateTab("💀 COMBATE")
-Window:CreateSwitch("Kill Aura", function(s) end)
-Window:CreateSwitch("Auto Parry", function(s) end)
-Window:CreateSlider("Aura Range", function(v) end)
-Window:CreateSwitch("Aimlock", function(s) end)
 
--- [[ PESTAÑA 3: VISUALES ]]
+Window:CreateSwitch("Kill Aura (Test)", function(estado)
+    if estado then print("Kill Aura Activo") end
+end)
+
+-- [[ PESTAÑA: VISUALES ]]
 Window:CreateTab("👁️ VISUALES")
-Window:CreateSwitch("Player ESP", function(s) end)
-Window:CreateSwitch("Tracers", function(s) end)
-Window:CreateSwitch("Box ESP", function(s) end)
-Window:CreateSlider("ESP Distance", function(v) end)
 
--- [[ PESTAÑA 4: MISCELÁNEOS ]]
-Window:CreateTab("🛠️ OTROS")
-Window:CreateSwitch("Auto Farm", function(s) end)
-Window:CreateSwitch("Anti-AFK", function(s) end)
-Window:CreateSlider("Farm Speed", function(v) end)
-Window:CreateSwitch("Server Hop", function(s) end)
+Window:CreateSwitch("Nombres ESP", function(estado)
+    for _, p in pairs(game.Players:GetPlayers()) do
+        if p ~= Player and p.Character and p.Character:FindFirstChild("Head") then
+            if estado then
+                local bill = Instance.new("BillboardGui", p.Character.Head)
+                bill.Name = "LuisESP"
+                bill.AlwaysOnTop = true
+                bill.Size = UDim2.new(0, 100, 0, 50)
+                bill.ExtentsOffset = Vector3.new(0, 3, 0)
+                local lbl = Instance.new("TextLabel", bill)
+                lbl.Text = p.Name
+                lbl.Size = UDim2.new(1, 0, 1, 0)
+                lbl.TextColor3 = Color3.new(1, 1, 1)
+                lbl.BackgroundTransparency = 1
+                lbl.Font = Enum.Font.GothamBold
+                lbl.TextSize = 12
+            else
+                if p.Character.Head:FindFirstChild("LuisESP") then
+                    p.Character.Head.LuisESP:Destroy()
+                end
+            end
+        end
+    end
+end)
 
--- Notificación final de carga exitosa
-game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "LUIS UNV",
-    Text = "Interfaz cargada. ¡Pruébalo todo! 😈",
-    Duration = 5
-})
+-- [[ ACTUALIZAR PERSONAJE ]]
+Player.CharacterAdded:Connect(function(newChar)
+    Character = newChar
+    Humanoid = newChar:WaitForChild("Humanoid")
+    Root = newChar:WaitForChild("HumanoidRootPart")
+end)
