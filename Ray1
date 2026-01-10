@@ -1,0 +1,43 @@
+-- [[ SCRIPT DE PRUEBA TOTAL - LUIS ELITE ]]
+
+-- Cargamos la librería desde tu enlace
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray"))()
+
+-- Creamos la ventana (Esto activa el HUD, el Neón y el sistema Anti-Multi)
+local Window = Library:CreateWindow()
+
+-- [[ PESTAÑA 1: MOVIMIENTO ]]
+Window:CreateTab("⚡ MOVIMIENTO")
+Window:CreateSlider("WalkSpeed", function(v) end)
+Window:CreateSlider("JumpPower", function(v) end)
+Window:CreateSlider("HipHeight", function(v) end)
+Window:CreateSwitch("Noclip Mode", function(s) end)
+Window:CreateSwitch("Infinite Jump", function(s) end)
+
+-- [[ PESTAÑA 2: COMBATE ]]
+Window:CreateTab("💀 COMBATE")
+Window:CreateSwitch("Kill Aura", function(s) end)
+Window:CreateSwitch("Auto Parry", function(s) end)
+Window:CreateSlider("Aura Range", function(v) end)
+Window:CreateSwitch("Aimlock", function(s) end)
+
+-- [[ PESTAÑA 3: VISUALES ]]
+Window:CreateTab("👁️ VISUALES")
+Window:CreateSwitch("Player ESP", function(s) end)
+Window:CreateSwitch("Tracers", function(s) end)
+Window:CreateSwitch("Box ESP", function(s) end)
+Window:CreateSlider("ESP Distance", function(v) end)
+
+-- [[ PESTAÑA 4: MISCELÁNEOS ]]
+Window:CreateTab("🛠️ OTROS")
+Window:CreateSwitch("Auto Farm", function(s) end)
+Window:CreateSwitch("Anti-AFK", function(s) end)
+Window:CreateSlider("Farm Speed", function(v) end)
+Window:CreateSwitch("Server Hop", function(s) end)
+
+-- Notificación final de carga exitosa
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "LUIS UNV",
+    Text = "Interfaz cargada. ¡Pruébalo todo! 😈",
+    Duration = 5
+})
