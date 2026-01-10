@@ -1,4 +1,4 @@
--- [[ LUIS HUD - VERSIÓN ELITE COMPACTA ]]
+-- [[ LUIS HUD - NEÓN REAL Y LIMPIO ]]
 local ScreenGui = Instance.new("ScreenGui")
 local Main = Instance.new("Frame")
 local Header = Instance.new("Frame")
@@ -8,9 +8,9 @@ local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "Luis_Elite_V2"
+ScreenGui.Name = "Luis_Neon_Fixed"
 
--- [[ NOTIFICACIONES MEJORADAS ]]
+-- [[ FUNCIÓN DE NOTIFICACIÓN ]]
 local function Notify(text, color)
     local n = Instance.new("Frame", ScreenGui)
     n.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
@@ -38,10 +38,10 @@ Main.Name = "Main"
 Main.Parent = ScreenGui
 Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 Main.Position = UDim2.new(0.5, -170, 0.5, -110)
-Main.Size = UDim2.new(0, 360, 0, 230) -- Más pequeño y elegante
+Main.Size = UDim2.new(0, 360, 0, 230)
 Main.Active = true
 Main.Draggable = true
-Main.ClipsDescendants = true
+Main.ClipsDescendants = true -- PARA QUE NADA SE SALGA
 
 local MainStroke = Instance.new("UIStroke", Main)
 MainStroke.Thickness = 2.5
@@ -74,7 +74,7 @@ local SidebarList = Instance.new("UIListLayout", Sidebar)
 SidebarList.Padding = UDim.new(0, 3)
 SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- AVATAR PEQUEÑO (No empuja las pestañas)
+-- AVATAR PEQUEÑO
 local AvatarFrame = Instance.new("Frame", Sidebar)
 AvatarFrame.Size = UDim2.new(0, 45, 0, 45)
 AvatarFrame.BackgroundTransparency = 1
@@ -88,7 +88,7 @@ Instance.new("UICorner", AvatarImg).CornerRadius = UDim.new(1, 0)
 local AvStroke = Instance.new("UIStroke", AvatarImg)
 AvStroke.Thickness = 1.5
 
--- Pestañas pegaditas
+-- Pestañas
 local function AddTab(name)
     local t = Instance.new("TextButton", Sidebar)
     t.Size = UDim2.new(0.9, 0, 0, 25)
@@ -105,7 +105,7 @@ AddTab("💀 Combate")
 AddTab("🛠️ Sistema")
 AddTab("🎨 Visuales")
 
--- [[ CONTAINER CENTRAL CON EFECTO NEÓN ]]
+-- [[ CONTAINER CENTRAL (SIN RAYAS LOCAS) ]]
 Container.Name = "Container"
 Container.Parent = Main
 Container.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
@@ -115,24 +115,6 @@ Container.CanvasSize = UDim2.new(0, 0, 0, 0)
 Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
 Container.ScrollBarThickness = 2
 Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 8)
-
--- RAYAS NEÓN FONDO
-local NeonBg = Instance.new("Frame", Container)
-NeonBg.Size = UDim2.new(1, 0, 1, 0)
-NeonBg.BackgroundTransparency = 1
-for i = 1, 3 do
-    local r = Instance.new("Frame", NeonBg)
-    r.Size = UDim2.new(0.3, 0, 2, 0)
-    r.BackgroundColor3 = Color3.fromHSV(i/3, 0.8, 1)
-    r.BackgroundTransparency = 0.9
-    r.Rotation = 45
-    task.spawn(function()
-        while task.wait() do
-            r.Position = r.Position + UDim2.new(0.002, 0, 0, 0)
-            if r.Position.X.Scale > 1.2 then r.Position = UDim2.new(-0.5, 0, 0, 0) end
-        end
-    end)
-end
 
 local ContainerList = Instance.new("UIListLayout", Container)
 ContainerList.Padding = UDim.new(0, 4)
@@ -148,6 +130,12 @@ for i = 1, 12 do
     f.Font = Enum.Font.Gotham
     f.TextSize = 10
     Instance.new("UICorner", f).CornerRadius = UDim.new(0, 4)
+    
+    -- Un pequeño borde neón a cada botón que brilla suave
+    local bStroke = Instance.new("UIStroke", f)
+    bStroke.Thickness = 1
+    bStroke.Transparency = 0.6
+    bStroke.Color = Color3.new(0,1,1)
 end
 
 -- [[ CONTROLES ]]
@@ -178,7 +166,7 @@ Minimize.MouseButton1Click:Connect(function()
     min = not min
 end)
 
--- [[ EFECTO NEÓN ]]
+-- [[ EFECTO NEÓN SINCRONIZADO ]]
 task.spawn(function()
     while task.wait(0.01) do
         local h = (tick() % 5 / 5)
@@ -186,7 +174,13 @@ task.spawn(function()
         MainStroke.Color = c
         Title.TextColor3 = c
         AvStroke.Color = c
+        -- Brillo en los botones también
+        for _, obj in pairs(Container:GetChildren()) do
+            if obj:IsA("TextButton") then
+                obj:FindFirstChildOfClass("UIStroke").Color = c
+            end
+        end
     end
 end)
 
-Notify("Diseño Compacto Listo ✅", Color3.fromRGB(0, 255, 150))
+Notify("Limpieza completa. Neón estable ✅", Color3.fromRGB(0, 255, 255))
