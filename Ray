@@ -1,70 +1,469 @@
+-- [[ LUIS SCRIPT - CUSTOM NEON UI ]]
+
+-- Servicios
+local Players = game:GetService("Players")
+local LP = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+-- Colores Neón Personalizables (¡Ajusta a tu gusto!)
+local NEON_COLOR_1 = Color3.fromRGB(0, 255, 255) -- Cyan
+local NEON_COLOR_2 = Color3.fromRGB(255, 0, 255) -- Magenta
+local NEON_COLOR_3 = Color3.fromRGB(255, 255, 0) -- Amarillo
+
+-- [[ CREACIÓN DEL GUI PRINCIPAL ]]
 local ScreenGui = Instance.new("ScreenGui")
-local MainFrame = Instance.new("Frame")
-local Sidebar = Instance.new("Frame")
-local TabHolder = Instance.new("ScrollingFrame")
-local ContentHolder = Instance.new("Frame")
-local UIListLayout = Instance.new("UIListLayout")
-
--- Configuración básica del HUD
+ScreenGui.Name = "LuisNeonUI"
 ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "LuisRayfieldStyle"
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
+local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
-MainFrame.Size = UDim2.new(0, 500, 0, 350)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.BorderSizePixel = 0
+MainFrame.Size = UDim2.new(0, 600, 0, 450)
+MainFrame.Position = UDim2.new(0.5, -300, 0.5, -225) -- Centrado
 MainFrame.Active = true
-MainFrame.Draggable = true -- Para que puedas moverlo
+MainFrame.Draggable = true -- Se puede arrastrar
 
--- Barra Lateral (Sidebar)
+-- Esquina redondeada del MainFrame
+local UICorner_Main = Instance.new("UICorner")
+UICorner_Main.CornerRadius = UDim.new(0, 10)
+UICorner_Main.Parent = MainFrame
+
+-- [[ Header con título y botones de control ]]
+local Header = Instance.new("Frame")
+Header.Name = "Header"
+Header.Parent = MainFrame
+Header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Header.Size = UDim2.new(1, 0, 0, 30)
+
+-- Esquina redondeada del Header (solo arriba)
+local UICorner_Header = Instance.new("UICorner")
+UICorner_Header.CornerRadius = UDim.new(0, 10)
+UICorner_Header.Parent = Header
+
+-- Título
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Parent = Header
+Title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(0, 200, 1, 0)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Text = "LUIS HUB"
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Botón de Cerrar
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = Header
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+CloseButton.Size = UDim2.new(0, 20, 0, 20)
+CloseButton.Position = UDim2.new(1, -25, 0.5, -10)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 14
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Text = "X"
+UICorner_Main:Clone().Parent = CloseButton -- Redondeado
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui.Enabled = false
+end)
+
+-- Botón de Minimizar
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Parent = Header
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 200, 50)
+MinimizeButton.Size = UDim2.new(0, 20, 0, 20)
+MinimizeButton.Position = UDim2.new(1, -50, 0.5, -10)
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.TextSize = 14
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.Text = "-"
+UICorner_Main:Clone().Parent = MinimizeButton -- Redondeado
+MinimizeButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- [[ SIDEBAR: Barra de pestañas ]]
+local Sidebar = Instance.new("Frame")
 Sidebar.Name = "Sidebar"
 Sidebar.Parent = MainFrame
-Sidebar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Sidebar.Size = UDim2.new(0, 130, 1, 0)
+Sidebar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Sidebar.Size = UDim2.new(0, 150, 1, -30) -- Ajustado por el Header
+Sidebar.Position = UDim2.new(0, 0, 0, 30)
 
-TabHolder.Name = "TabHolder"
-TabHolder.Parent = Sidebar
-TabHolder.BackgroundTransparency = 1
-TabHolder.Position = UDim2.new(0, 5, 0, 40)
-TabHolder.Size = UDim2.new(1, -10, 1, -50)
-TabHolder.CanvasSize = UDim2.new(0, 0, 2, 0)
-TabHolder.ScrollBarThickness = 2
+-- Esquina redondeada de Sidebar (solo abajo a la izquierda)
+local UICorner_Sidebar = Instance.new("UICorner")
+UICorner_Sidebar.CornerRadius = UDim.new(0, 10)
+UICorner_Sidebar.Parent = Sidebar
 
-UIListLayout.Parent = TabHolder
-UIListLayout.Padding = UDim.new(0, 5)
+local TabListLayout = Instance.new("UIListLayout")
+TabListLayout.Parent = Sidebar
+TabListLayout.FillDirection = Enum.FillDirection.Vertical
+TabListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+TabListLayout.Padding = UDim.new(0, 5)
+TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
--- Área de Botones (Contenido)
-ContentHolder.Name = "ContentHolder"
-ContentHolder.Parent = MainFrame
-ContentHolder.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-ContentHolder.Position = UDim2.new(0, 135, 0, 5)
-ContentHolder.Size = UDim2.new(1, -140, 1, -10)
+-- [[ CONTENIDO: Área principal con scroll ]]
+local ContentArea = Instance.new("ScrollingFrame")
+ContentArea.Name = "ContentArea"
+ContentArea.Parent = MainFrame
+ContentArea.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+ContentArea.BackgroundTransparency = 1
+ContentArea.BorderSizePixel = 0
+ContentArea.Size = UDim2.new(1, -160, 1, -40) -- Ajustado al Sidebar y Header
+ContentArea.Position = UDim2.new(0, 155, 0, 35)
+ContentArea.CanvasSize = UDim2.new(0, 0, 2, 0) -- Permite scroll vertical
+ContentArea.ScrollBarThickness = 6
+ContentArea.ScrollBarImageColor3 = NEON_COLOR_1 -- Color neón para la barra de scroll
 
--- Función para añadir "Pestañas"
-local function AddTab(name)
+local ContentListLayout = Instance.new("UIListLayout")
+ContentListLayout.Parent = ContentArea
+ContentListLayout.FillDirection = Enum.FillDirection.Vertical
+ContentListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+ContentListLayout.Padding = UDim.new(0, 10)
+ContentListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Diccionario para guardar el contenido de cada pestaña
+local Tabs = {}
+local CurrentTab = nil
+
+-- [[ FUNCIÓN PARA CREAR UNA PESTAÑA ]]
+local function CreateTab(name, icon)
     local TabButton = Instance.new("TextButton")
     TabButton.Name = name .. "Tab"
-    TabButton.Parent = TabHolder
-    TabButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    TabButton.Size = UDim2.new(1, 0, 0, 30)
-    TabButton.Text = name
-    TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TabButton.Parent = Sidebar
+    TabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    TabButton.Size = UDim2.new(0, 140, 0, 40)
+    TabButton.Text = (icon and icon .. " " or "") .. name
+    TabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
     TabButton.Font = Enum.Font.GothamSemibold
-    TabButton.TextSize = 12
-    
-    -- Bordes redondeados
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 6)
-    UICorner.Parent = TabButton
-    
-    return TabButton
+    TabButton.TextSize = 14
+    TabButton.TextXAlignment = Enum.TextXAlignment.Left
+    TabButton.TextScaled = false
+    TabButton.TextWrapped = true
+    TabButton.LayoutOrder = #Tabs + 1 -- Para ordenar las pestañas
+
+    UICorner_Main:Clone().Parent = TabButton -- Bordes redondeados
+
+    -- Frame para el contenido de esta pestaña
+    local TabContentFrame = Instance.new("Frame")
+    TabContentFrame.Name = name .. "Content"
+    TabContentFrame.Parent = ContentArea
+    TabContentFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    TabContentFrame.BackgroundTransparency = 1
+    TabContentFrame.Size = UDim2.new(1, -20, 0, 0) -- El tamaño se ajustará con el contenido
+    TabContentFrame.Visible = false -- Oculto por defecto
+
+    local TabContentListLayout = Instance.new("UIListLayout")
+    TabContentListLayout.Parent = TabContentFrame
+    TabContentListLayout.FillDirection = Enum.FillDirection.Vertical
+    TabContentListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    TabContentListLayout.Padding = UDim.new(0, 10)
+    TabContentListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    -- Ajusta automáticamente la altura del TabContentFrame
+    TabContentListLayout.Changed:Connect(function(property)
+        if property == "AbsoluteContentSize" then
+            TabContentFrame.Size = UDim2.new(1, -20, 0, TabContentListLayout.AbsoluteContentSize.Y)
+            ContentArea.CanvasSize = UDim2.new(0, 0, 0, ContentListLayout.AbsoluteContentSize.Y)
+        end
+    end)
+
+
+    Tabs[name] = {Button = TabButton, Content = TabContentFrame}
+
+    -- Lógica para cambiar de pestaña
+    TabButton.MouseButton1Click:Connect(function()
+        if CurrentTab then
+            Tabs[CurrentTab].Content.Visible = false
+            Tabs[CurrentTab].Button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            Tabs[CurrentTab].Button.TextColor3 = Color3.fromRGB(200, 200, 200)
+        end
+        TabContentFrame.Visible = true
+        TabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- Color al seleccionar
+        TabButton.TextColor3 = NEON_COLOR_1
+        CurrentTab = name
+    end)
+
+    -- Activar la primera pestaña por defecto
+    if #Tabs == 1 then
+        TabButton:SetAttribute("Activated", true) -- Usamos atributos para evitar activar el evento al inicio
+        TabContentFrame.Visible = true
+        TabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TabButton.TextColor3 = NEON_COLOR_1
+        CurrentTab = name
+    end
+
+    return TabContentFrame -- Devuelve el frame de contenido para añadir elementos
 end
 
--- Prueba de pestañas
-AddTab("MOVIMIENTO")
-AddTab("COMBATE")
-AddTab("GOD MODE")
-AddTab("SISTEMA")
+-- [[ FUNCIÓN PARA CREAR UN SEPARADOR (FRAME CON LUZ NEÓN) ]]
+local function CreateSection(parentFrame, title)
+    local SectionFrame = Instance.new("Frame")
+    SectionFrame.Name = title:gsub(" ", "") .. "Section"
+    SectionFrame.Parent = parentFrame
+    SectionFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    SectionFrame.Size = UDim2.new(1, 0, 0, 50) -- Altura inicial
+    SectionFrame.BorderSizePixel = 0
 
-print("Diseño base de Luis cargado ✅")
+    UICorner_Main:Clone().Parent = SectionFrame
+
+    local SectionTitle = Instance.new("TextLabel")
+    SectionTitle.Parent = SectionFrame
+    SectionTitle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    SectionTitle.BackgroundTransparency = 1
+    SectionTitle.Size = UDim2.new(1, -20, 0, 20)
+    SectionTitle.Position = UDim2.new(0, 10, 0, 5)
+    SectionTitle.Font = Enum.Font.GothamSemibold
+    SectionTitle.TextSize = 14
+    SectionTitle.TextColor3 = NEON_COLOR_2 -- Color neón para el título de sección
+    SectionTitle.Text = title
+    SectionTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- Línea neón inferior
+    local NeonLine = Instance.new("Frame")
+    NeonLine.Name = "NeonLine"
+    NeonLine.Parent = SectionFrame
+    NeonLine.BackgroundColor3 = NEON_COLOR_1
+    NeonLine.Size = UDim2.new(1, -20, 0, 2)
+    NeonLine.Position = UDim2.new(0, 10, 1, -5)
+    
+    -- Efecto neón de brillo
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Parent = SectionFrame
+    UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    UIStroke.Color = NEON_COLOR_1
+    UIStroke.Thickness = 2
+    UIStroke.Transparency = 0.5
+
+    -- Un UIListLayout para organizar los elementos dentro de la sección
+    local SectionListLayout = Instance.new("UIListLayout")
+    SectionListLayout.Parent = SectionFrame
+    SectionListLayout.FillDirection = Enum.FillDirection.Vertical
+    SectionListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    SectionListLayout.Padding = UDim.new(0, 5)
+    SectionListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    SectionListLayout.Parent = SectionFrame
+
+    -- Ajusta la altura de la sección automáticamente
+    SectionListLayout.Changed:Connect(function(property)
+        if property == "AbsoluteContentSize" then
+            SectionFrame.Size = UDim2.new(1, 0, 0, SectionListLayout.AbsoluteContentSize.Y + 10) -- +10 para padding
+        end
+    end)
+    
+    return SectionFrame -- Retorna el frame de la sección para añadir elementos
+end
+
+-- [[ FUNCIONES BÁSICAS DE ELEMENTOS UI (EJEMPLOS) ]]
+local function CreateToggleButton(parentFrame, text, initialState, onClick)
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Name = text:gsub(" ", "") .. "Toggle"
+    ToggleFrame.Parent = parentFrame
+    ToggleFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    ToggleFrame.Size = UDim2.new(1, -20, 0, 30) -- Ajuste de tamaño para botones
+    ToggleFrame.Position = UDim2.new(0, 10, 0, 0) -- Centrado
+    ToggleFrame.BorderSizePixel = 0
+    UICorner_Main:Clone().Parent = ToggleFrame
+
+    local ToggleText = Instance.new("TextLabel")
+    ToggleText.Parent = ToggleFrame
+    ToggleText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleText.BackgroundTransparency = 1
+    ToggleText.Size = UDim2.new(0.8, 0, 1, 0)
+    ToggleText.Position = UDim2.new(0, 5, 0, 0)
+    ToggleText.Font = Enum.Font.Gotham
+    ToggleText.TextSize = 14
+    ToggleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleText.Text = text
+    ToggleText.TextXAlignment = Enum.TextXAlignment.Left
+
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Name = "ToggleButton"
+    ToggleButton.Parent = ToggleFrame
+    ToggleButton.BackgroundColor3 = initialState and NEON_COLOR_1 or Color3.fromRGB(80, 80, 80)
+    ToggleButton.Size = UDim2.new(0, 20, 0, 20)
+    ToggleButton.Position = UDim2.new(1, -25, 0.5, -10)
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.TextSize = 14
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleButton.Text = initialState and "ON" or "OFF"
+    UICorner_Main:Clone().Parent = ToggleButton
+
+    local currentState = initialState
+    ToggleButton.MouseButton1Click:Connect(function()
+        currentState = not currentState
+        ToggleButton.BackgroundColor3 = currentState and NEON_COLOR_1 or Color3.fromRGB(80, 80, 80)
+        ToggleButton.Text = currentState and "ON" or "OFF"
+        if onClick then onClick(currentState) end
+    end)
+    return ToggleFrame -- Devuelve el frame para ajustar LayoutOrder
+end
+
+local function CreateSlider(parentFrame, text, min, max, initial, onValueChanged)
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.Name = text:gsub(" ", "") .. "Slider"
+    SliderFrame.Parent = parentFrame
+    SliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    SliderFrame.Size = UDim2.new(1, -20, 0, 50)
+    SliderFrame.Position = UDim2.new(0, 10, 0, 0)
+    SliderFrame.BorderSizePixel = 0
+    UICorner_Main:Clone().Parent = SliderFrame
+
+    local SliderText = Instance.new("TextLabel")
+    SliderText.Parent = SliderFrame
+    SliderText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    SliderText.BackgroundTransparency = 1
+    SliderText.Size = UDim2.new(0.7, 0, 0.5, 0)
+    SliderText.Position = UDim2.new(0, 5, 0, 0)
+    SliderText.Font = Enum.Font.Gotham
+    SliderText.TextSize = 14
+    SliderText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SliderText.Text = text
+    SliderText.TextXAlignment = Enum.TextXAlignment.Left
+
+    local ValueLabel = Instance.new("TextLabel")
+    ValueLabel.Parent = SliderFrame
+    ValueLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ValueLabel.BackgroundTransparency = 1
+    ValueLabel.Size = UDim2.new(0.2, 0, 0.5, 0)
+    ValueLabel.Position = UDim2.new(0.7, 0, 0, 0)
+    ValueLabel.Font = Enum.Font.Gotham
+    ValueLabel.TextSize = 14
+    ValueLabel.TextColor3 = NEON_COLOR_3
+    ValueLabel.Text = tostring(initial)
+
+    local Slider = Instance.new("Slider")
+    Slider.Name = "Slider"
+    Slider.Parent = SliderFrame
+    Slider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    Slider.BorderColor3 = NEON_COLOR_1
+    Slider.BorderSizePixel = 1
+    Slider.Size = UDim2.new(1, -20, 0, 10)
+    Slider.Position = UDim2.new(0, 10, 0.5, 0)
+    Slider.Value = (initial - min) / (max - min) -- Normalize value
+    Slider.Minimum = min
+    Slider.Maximum = max
+    UICorner_Main:Clone().Parent = Slider
+
+    Slider.Changed:Connect(function(property)
+        if property == "Value" then
+            local currentValue = min + (max - min) * Slider.Value
+            ValueLabel.Text = tostring(math.floor(currentValue * 10) / 10) -- Redondear a un decimal
+            if onValueChanged then onValueChanged(currentValue) end
+        end
+    end)
+    return SliderFrame
+end
+
+
+-- [[ DEFINICIÓN DE TUS PESTAÑAS Y SECCIONES ]]
+
+-- PESTAÑA: MOVIMIENTO
+local MovementTabContent = CreateTab("MOVIMIENTO", "⚡")
+local MovementSection = CreateSection(MovementTabContent, "Controles de Movimiento")
+CreateSlider(MovementSection, "WalkSpeed", 16, 300, 16, function(v) print("WalkSpeed:", v) end)
+CreateToggleButton(MovementSection, "FLY MOBILE (IY)", false, function(active) print("Fly:", active) end)
+CreateToggleButton(MovementSection, "INFINITE JUMP", false, function(active) print("Inf Jump:", active) end)
+CreateToggleButton(MovementSection, "NOCLIP", false, function(active) print("Noclip:", active) end)
+CreateToggleButton(MovementSection, "WALK FLING", false, function(active) print("Walk Fling:", active) end)
+
+local FlySpeedSection = CreateSection(MovementTabContent, "Velocidad de Vuelo")
+CreateSlider(FlySpeedSection, "Fly Speed", 1, 10, 1, function(v) print("Fly Speed:", v) end)
+
+
+-- PESTAÑA: GOD MODE
+local GodModeTabContent = CreateTab("GOD MODE", "🛡️")
+local GodSection = CreateSection(GodModeTabContent, "Modo Dios")
+CreateToggleButton(GodSection, "Regeneración Total", false, function(active) print("Regen:", active) end)
+CreateToggleButton(GodSection, "Modo Invisible", false, function(active) print("Invisible:", active) end)
+CreateToggleButton(GodSection, "Anti-Vacío", false, function(active) print("Anti-Void:", active) end)
+
+
+-- PESTAÑA: VISUALES & SISTEMA
+local SystemTabContent = CreateTab("VISUALES & SISTEMA", "👁️‍🗨️")
+local VisualsSection = CreateSection(SystemTabContent, "Ajustes Visuales")
+CreateToggleButton(VisualsSection, "ESP Rainbow", false, function(active) print("ESP:", active) end)
+
+local SystemSection = CreateSection(SystemTabContent, "Ajustes del Sistema")
+CreateToggleButton(SystemSection, "Anti-AFK", false, function(active) print("Anti-AFK:", active) end)
+CreateToggleButton(SystemSection, "FPS Booster", false, function(active) print("FPS Boost:", active) end)
+
+
+-- PESTAÑA: COMBATE (CONDICIONAL)
+if game.PlaceId == 14236123211 then
+    local CombatTabContent = CreateTab("COMBATE", "💀")
+    local CombatSection = CreateSection(CombatTabContent, "Modificadores de Combate")
+    CreateToggleButton(CombatSection, "AUTO GOLPES", false, function(active) print("Auto Golpes:", active) end)
+    CreateToggleButton(CombatSection, "AUTO WIN (PUSH)", false, function(active) print("Auto Win:", active) end)
+end
+
+-- [[ LÓGICA DE EFECTO NEÓN EN EL BORDE PRINCIPAL ]]
+local UICorner_MainFrame = Instance.new("UICorner")
+UICorner_MainFrame.CornerRadius = UDim.new(0, 10)
+UICorner_MainFrame.Parent = MainFrame
+
+local UIStroke_MainFrame = Instance.new("UIStroke")
+UIStroke_MainFrame.Parent = MainFrame
+UIStroke_MainFrame.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke_MainFrame.Thickness = 2
+UIStroke_MainFrame.Transparency = 0.5
+
+-- Animación de Color Neón para el borde principal
+task.spawn(function()
+    while true do
+        for i = 0, 1, 0.05 do
+            UIStroke_MainFrame.Color = Color3.fromHSV(i, 1, 1)
+            task.wait(0.05)
+        end
+    end
+end)
+
+-- Notificación de carga (ejemplo)
+local NotifyFrame = Instance.new("Frame")
+NotifyFrame.Name = "Notification"
+NotifyFrame.Parent = ScreenGui
+NotifyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+NotifyFrame.Size = UDim2.new(0, 250, 0, 40)
+NotifyFrame.Position = UDim2.new(0.5, -125, 1, -50) -- Abajo al centro
+NotifyFrame.BorderColor3 = NEON_COLOR_1
+NotifyFrame.BorderSizePixel = 2
+NotifyFrame.Visible = false
+
+local NotifyText = Instance.new("TextLabel")
+NotifyText.Parent = NotifyFrame
+NotifyText.BackgroundTransparency = 1
+NotifyText.Size = UDim2.new(1, 0, 1, 0)
+NotifyText.Font = Enum.Font.GothamSemibold
+NotifyText.TextSize = 14
+NotifyText.TextColor3 = Color3.fromRGB(255, 255, 255)
+NotifyText.Text = ""
+
+UICorner_Main:Clone().Parent = NotifyFrame
+
+-- Función de Notificación (similar a tu hud:Notify)
+local function Notify(message)
+    NotifyText.Text = message
+    NotifyFrame.Visible = true
+    TweenService:Create(NotifyFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -125, 1, -90)}):Play()
+    task.wait(3)
+    TweenService:Create(NotifyFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -125, 1, -50)}):Play()
+    task.wait(0.5)
+    NotifyFrame.Visible = false
+end
+
+-- Lanzar la notificación de carga al iniciar
+Notify("LUIS SCRIPT - DISEÑO NEÓN CARGADO ✅")
+
+-- Tu lógica de Fly, Noclip, Anti-AFK, etc., deberá ir dentro de los callbacks de los botones.
+-- Por ejemplo, el ToggleButton de "FLY MOBILE (IY)" llamaría a tu función mobilefly/unmobilefly.
+-- Este es solo el diseño, la integración de tus funciones viene ahora.
