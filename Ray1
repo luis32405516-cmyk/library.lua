@@ -1,4 +1,4 @@
--- [[ LUIS UNV - SCRIPT DEFINITIVO ]]
+-- [[ LUIS UNV - SCRIPT DEFINITIVO ACTUALIZADO ]]
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray"))()
 local Window = Library:CreateWindow()
@@ -7,7 +7,6 @@ local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local Lighting = game:GetService("Lighting")
 
 -- [[ VARIABLES DE ESTADO ]]
 local FLYING = false
@@ -72,24 +71,24 @@ end
 ---------------------------------------------------------
 -- [ APARTADO: MOVIMIENTO ]
 ---------------------------------------------------------
-Window:CreateTab("⚡ MOVIMIENTO")
+local TabMov = Window:CreateTab("⚡ MOVIMIENTO")
 
-Window:CreateSlider("Velocidad", function(v)
+TabMov:CreateSlider("Velocidad", function(v)
     WalkSpeedValue = v
     if LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
         LP.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = v
     end
 end)
 
-Window:CreateSwitch("Fly Mobile (IY)", function(estado)
+TabMov:CreateSwitch("Fly Mobile (IY)", function(estado)
     if estado then mobilefly() else unmobilefly() end
 end)
 
-Window:CreateSlider("Fly Speed", function(v)
+TabMov:CreateSlider("Fly Speed", function(v)
     iyflyspeed = v
 end)
 
-Window:CreateSwitch("Noclip 👻", function(estado)
+TabMov:CreateSwitch("Noclip 👻", function(estado)
     noclipActive = estado
     if noclipActive then
         _G.Noc = RunService.Stepped:Connect(function()
@@ -104,11 +103,11 @@ Window:CreateSwitch("Noclip 👻", function(estado)
     end
 end)
 
-Window:CreateSwitch("Infinite Jump 🦘", function(estado)
+TabMov:CreateSwitch("Infinite Jump 🦘", function(estado)
     InfJumpEnabled = estado
 end)
 
-Window:CreateSwitch("Walk Fling 🌀", function(estado)
+TabMov:CreateSwitch("Walk Fling 🌀", function(estado)
     FLING_ENABLED = estado
     task.spawn(function()
         while FLING_ENABLED do
@@ -127,9 +126,9 @@ end)
 ---------------------------------------------------------
 -- [ APARTADO: VISUALES ]
 ---------------------------------------------------------
-Window:CreateTab("👁️ VISUALES")
+local TabVis = Window:CreateTab("👁️ VISUALES")
 
-Window:CreateSwitch("ESP Rainbow 🌈", function(estado)
+TabVis:CreateSwitch("ESP Rainbow 🌈", function(estado)
     ESP_ENABLED = estado
     if ESP_ENABLED then
         task.spawn(function()
