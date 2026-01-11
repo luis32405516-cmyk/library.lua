@@ -1,10 +1,12 @@
--- [[ LUIS UNV - FINAL OPTIMIZED LOADER ]]
+-- [[ LUIS UNV - BYPASS POR ID CONFIGURADO ]]
 
 local LP = game:GetService("Players").LocalPlayer
 local HttpService = game:GetService("HttpService")
 local fRequest = request or http_request or syn_request or (fluxus and fluxus.request)
 local fOpenUrl = openurl or (api_open_url)
 
+-- CONFIGURACIÓN PERSONALIZADA
+local TU_ID_AQUI = 9052854596 -- Tu ID configurada
 local service = 18296
 local FILE_PATH = "LuisUNV_Key.txt" 
 local SCRIPT_URL = "https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray1"
@@ -23,7 +25,14 @@ local function verify(key)
     return false
 end
 
--- [[ AUTO-LOADER ]]
+-- [[ ACCESO DIRECTO PARA TI ]]
+if LP.UserId == TU_ID_AQUI then
+    warn("LUIS UNV: Acceso de Creador detectado. Saltando Key System...")
+    loadstring(game:HttpGet(SCRIPT_URL))()
+    return
+end
+
+-- [[ AUTO-LOADER PARA USUARIOS ]]
 if isfile(FILE_PATH) then
     local savedKey = readfile(FILE_PATH)
     if verify(savedKey) then
@@ -32,14 +41,11 @@ if isfile(FILE_PATH) then
     end
 end
 
--- [[ INTERFAZ ]]
+-- [[ INTERFAZ PARA USUARIOS ]]
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 320, 0, 210)
-Main.Position = UDim2.new(0.5, -160, 0.5, -105)
-Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-Main.Active = true
-Main.Draggable = true 
+Main.Size = UDim2.new(0, 320, 0, 210); Main.Position = UDim2.new(0.5, -160, 0.5, -105)
+Main.BackgroundColor3 = Color3.fromRGB(12, 12, 12); Main.Active = true; Main.Draggable = true 
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
 
 local UIStroke = Instance.new("UIStroke", Main)
@@ -50,18 +56,16 @@ end)
 
 local CloseBtn = Instance.new("TextButton", Main)
 CloseBtn.Text = "X"; CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0, 5)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 0); CloseBtn.TextColor3 = Color3.new(1, 1, 1); CloseBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", CloseBtn)
-CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 0); CloseBtn.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", CloseBtn); CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 local Title = Instance.new("TextLabel", Main)
 Title.Text = "LUIS UNV SYSTEM"; Title.Size = UDim2.new(1, 0, 0, 50)
 Title.TextColor3 = Color3.new(1,1,1); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold
 
 local Input = Instance.new("TextBox", Main)
-Input.PlaceholderText = "KEY"; Input.Text = "" 
-Input.Size = UDim2.new(0.85, 0, 0, 40); Input.Position = UDim2.new(0.075, 0, 0.3, 0)
-Input.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Input.TextColor3 = Color3.new(1, 1, 1)
+Input.PlaceholderText = "KEY"; Input.Text = ""; Input.Size = UDim2.new(0.85, 0, 0, 40)
+Input.Position = UDim2.new(0.075, 0, 0.3, 0); Input.BackgroundColor3 = Color3.fromRGB(22, 22, 22); Input.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Input)
 
 local GetBtn = Instance.new("TextButton", Main)
@@ -71,10 +75,9 @@ GetBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", GetBtn)
 
 local VerifyBtn = Instance.new("TextButton", Main)
 VerifyBtn.Text = "VERIFICAR"; VerifyBtn.Size = UDim2.new(0.4, 0, 0, 35)
-VerifyBtn.Position = UDim2.new(0.525, 0, 0.55, 0); VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 80)
+VerifyBtn.Position = UDim2.new(0.525, 0, 0.55, 0); VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
 VerifyBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", VerifyBtn)
 
--- Lógica de OBTENER KEY
 GetBtn.MouseButton1Click:Connect(function()
     local res = fRequest({
         Url = "https://api.platoboost.net/public/start",
@@ -84,30 +87,22 @@ GetBtn.MouseButton1Click:Connect(function()
     })
     if res.StatusCode == 200 then
         local url = HttpService:JSONDecode(res.Body).data.url
-        setclipboard(url)
-        GetBtn.Text = "¡LINK COPIADO!"
-        -- Intentos de abrir navegador
+        setclipboard(url); GetBtn.Text = "¡LINK COPIADO!"
         if fOpenUrl then pcall(function() fOpenUrl(url) end) end
         pcall(function() game:GetService("GuiService"):OpenBrowserWindow(url) end)
-    else
-        GetBtn.Text = "ERROR DE RED"
     end
-    task.wait(2)
-    GetBtn.Text = "OBTENER KEY"
+    task.wait(2); GetBtn.Text = "OBTENER KEY"
 end)
 
--- Lógica de VERIFICAR
 VerifyBtn.MouseButton1Click:Connect(function()
     VerifyBtn.Text = "VERIFICANDO..."
     if verify(Input.Text) then
         VerifyBtn.Text = "¡ACCESO CORRECTO!"
         writefile(FILE_PATH, Input.Text)
-        task.wait(1)
-        ScreenGui:Destroy()
+        task.wait(1); ScreenGui:Destroy()
         loadstring(game:HttpGet(SCRIPT_URL))()
     else
         VerifyBtn.Text = "LLAVE INVÁLIDA"
-        task.wait(2)
-        VerifyBtn.Text = "VERIFICAR"
+        task.wait(2); VerifyBtn.Text = "VERIFICAR"
     end
 end)
