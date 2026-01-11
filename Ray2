@@ -1,11 +1,13 @@
--- [[ LUIS UNV - INTEGRACIÓN TOTAL CON WORKSPACE ]]
+-- [[ LUIS UNV - AUTO-OPEN URL + AUTO-SAVE ]]
 
 local LP = game:GetService("Players").LocalPlayer
 local HttpService = game:GetService("HttpService")
 local fRequest = request or http_request or syn_request or (fluxus and fluxus.request)
+local fOpenUrl = openurl or (api_open_url) or print -- Detecta función para abrir navegador
+
 local service = 18296
-local SCRIPT_URL = "https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray1"
 local FILE_PATH = "LuisUNV_Key.txt" 
+local SCRIPT_URL = "https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray1"
 
 -- Función de Verificación
 local function verify(key)
@@ -21,8 +23,7 @@ local function verify(key)
     return false
 end
 
--- [[ AUTO-LOADER ]]
--- Revisa en la carpeta interna del ejecutor (Workspace)
+-- [[ AUTO-LOADER (WORKSPACE) ]]
 if isfile(FILE_PATH) then
     local savedKey = readfile(FILE_PATH)
     if verify(savedKey) then
@@ -31,17 +32,17 @@ if isfile(FILE_PATH) then
     end
 end
 
--- [[ INTERFAZ MEJORADA Y MOVIBLE ]]
+-- [[ INTERFAZ MOVIBLE ]]
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 local Main = Instance.new("Frame", ScreenGui)
 Main.Size = UDim2.new(0, 320, 0, 210)
 Main.Position = UDim2.new(0.5, -160, 0.5, -105)
 Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 Main.Active = true
-Main.Draggable = true -- Movible tocando cualquier parte
+Main.Draggable = true 
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
 
--- Borde Neón Animado
+-- Borde Neón
 local UIStroke = Instance.new("UIStroke", Main)
 UIStroke.Thickness = 2
 task.spawn(function()
@@ -50,11 +51,10 @@ task.spawn(function()
     end
 end)
 
--- Botón de Cerrar
+-- Botón Cerrar
 local CloseBtn = Instance.new("TextButton", Main)
-CloseBtn.Text = "X"; CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -35, 0, 5); CloseBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
-CloseBtn.TextColor3 = Color3.new(1, 1, 1); CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.Text = "X"; CloseBtn.Size = UDim2.new(0, 30, 0, 30); CloseBtn.Position = UDim2.new(1, -35, 0, 5)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 0); CloseBtn.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", CloseBtn)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
@@ -63,13 +63,12 @@ Title.Text = "LUIS UNV SYSTEM"; Title.Size = UDim2.new(1, 0, 0, 50)
 Title.TextColor3 = Color3.new(1,1,1); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold
 
 local Input = Instance.new("TextBox", Main)
-Input.PlaceholderText = "Pega tu Key aquí..."; Input.Text = ""
-Input.Size = UDim2.new(0.85, 0, 0, 40); Input.Position = UDim2.new(0.075, 0, 0.3, 0)
-Input.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Input.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", Input)
+Input.PlaceholderText = "Pega tu Key aquí..."; Input.Size = UDim2.new(0.85, 0, 0, 40)
+Input.Position = UDim2.new(0.075, 0, 0.3, 0); Input.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Input.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", Input)
 
 local GetBtn = Instance.new("TextButton", Main)
-GetBtn.Text = "OBTENER KEY"; GetBtn.Size = UDim2.new(0.4, 0, 0, 35)
+GetBtn.Text = "IR AL LINK (AUTO)"; GetBtn.Size = UDim2.new(0.4, 0, 0, 35)
 GetBtn.Position = UDim2.new(0.075, 0, 0.55, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 GetBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", GetBtn)
 
@@ -78,7 +77,7 @@ VerifyBtn.Text = "VERIFICAR"; VerifyBtn.Size = UDim2.new(0.4, 0, 0, 35)
 VerifyBtn.Position = UDim2.new(0.525, 0, 0.55, 0); VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
 VerifyBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", VerifyBtn)
 
--- Lógica de Botones
+-- Lógica para obtener link y ABRIR NAVEGADOR
 GetBtn.MouseButton1Click:Connect(function()
     local res = fRequest({
         Url = "https://api.platoboost.net/public/start",
@@ -87,13 +86,17 @@ GetBtn.MouseButton1Click:Connect(function()
         Body = HttpService:JSONEncode({service = service, identifier = tostring(LP.UserId)})
     })
     if res.StatusCode == 200 then
-        setclipboard(HttpService:JSONDecode(res.Body).data.url)
+        local url = HttpService:JSONDecode(res.Body).data.url
+        setclipboard(url) -- Por si acaso falla el auto-open
+        if fOpenUrl ~= print then
+            fOpenUrl(url) -- Abre el navegador automáticamente
+        end
     end
 end)
 
 VerifyBtn.MouseButton1Click:Connect(function()
     if verify(Input.Text) then
-        writefile(FILE_PATH, Input.Text) -- Aquí es donde se guarda en la carpeta interna
+        writefile(FILE_PATH, Input.Text)
         ScreenGui:Destroy()
         loadstring(game:HttpGet(SCRIPT_URL))()
     end
