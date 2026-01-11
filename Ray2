@@ -1,16 +1,19 @@
--- [[ LUIS UNV - MOVABLE HUD + CLOSE BUTTON + AUTO-SAVE ]]
+-- [[ LUIS UNV - INTEGRACIÓN TOTAL CON WORKSPACE ]]
 
 local LP = game:GetService("Players").LocalPlayer
 local HttpService = game:GetService("HttpService")
 local fRequest = request or http_request or syn_request or (fluxus and fluxus.request)
 local service = 18296
-local FILE_NAME = "LuisUNV_Key.txt"
+local SCRIPT_URL = "https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray1"
+local FILE_PATH = "LuisUNV_Key.txt" 
 
--- Función para verificar
+-- Función de Verificación
 local function verify(key)
     if not key or key == "" then return false end
     local url = "https://api.platoboost.net/public/whitelist/"..service.."?identifier="..LP.UserId.."&key="..key
-    local success, response = pcall(function() return fRequest({Url = url, Method = "GET"}) end)
+    local success, response = pcall(function() 
+        return fRequest({Url = url, Method = "GET"}) 
+    end)
     if success and response.StatusCode == 200 then
         local decoded = HttpService:JSONDecode(response.Body)
         return decoded.success and decoded.data.valid
@@ -18,86 +21,71 @@ local function verify(key)
     return false
 end
 
--- Auto-carga
-if isfile(FILE_NAME) and verify(readfile(FILE_NAME)) then
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray1"))()
-    return
+-- [[ AUTO-LOADER ]]
+-- Revisa en la carpeta interna del ejecutor (Workspace)
+if isfile(FILE_PATH) then
+    local savedKey = readfile(FILE_PATH)
+    if verify(savedKey) then
+        loadstring(game:HttpGet(SCRIPT_URL))()
+        return
+    end
 end
 
--- [[ INTERFAZ ]]
+-- [[ INTERFAZ MEJORADA Y MOVIBLE ]]
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 local Main = Instance.new("Frame", ScreenGui)
-Main.Name = "LuisMain"
 Main.Size = UDim2.new(0, 320, 0, 210)
 Main.Position = UDim2.new(0.5, -160, 0.5, -105)
-Main.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 Main.Active = true
-Main.Draggable = true -- Lo hace movible (Básico)
-Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+Main.Draggable = true -- Movible tocando cualquier parte
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 10)
 
--- Borde Neón
+-- Borde Neón Animado
 local UIStroke = Instance.new("UIStroke", Main)
 UIStroke.Thickness = 2
 task.spawn(function()
     while task.wait(0.01) do
-        UIStroke.Color = Color3.fromHSV(tick() % 5 / 5, 0.7, 1)
+        UIStroke.Color = Color3.fromHSV(tick() % 5 / 5, 0.8, 1)
     end
 end)
 
--- Botón de Cerrar (X)
+-- Botón de Cerrar
 local CloseBtn = Instance.new("TextButton", Main)
-CloseBtn.Text = "X"
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -35, 0, 5)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-CloseBtn.TextColor3 = Color3.new(1, 1, 1)
-CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.Text = "X"; CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0, 5); CloseBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+CloseBtn.TextColor3 = Color3.new(1, 1, 1); CloseBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", CloseBtn)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 local Title = Instance.new("TextLabel", Main)
 Title.Text = "LUIS UNV SYSTEM"; Title.Size = UDim2.new(1, 0, 0, 50)
-Title.TextColor3 = Color3.new(1,1,1); Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.GothamBold; Title.TextSize = 19
+Title.TextColor3 = Color3.new(1,1,1); Title.BackgroundTransparency = 1; Title.Font = Enum.Font.GothamBold
 
 local Input = Instance.new("TextBox", Main)
 Input.PlaceholderText = "Pega tu Key aquí..."; Input.Text = ""
 Input.Size = UDim2.new(0.85, 0, 0, 40); Input.Position = UDim2.new(0.075, 0, 0.3, 0)
-Input.BackgroundColor3 = Color3.fromRGB(22, 22, 22); Input.TextColor3 = Color3.new(1, 1, 1)
+Input.BackgroundColor3 = Color3.fromRGB(25, 25, 25); Input.TextColor3 = Color3.new(1, 1, 1)
 Instance.new("UICorner", Input)
 
 local GetBtn = Instance.new("TextButton", Main)
-GetBtn.Text = "OBTENER LINK"; GetBtn.Size = UDim2.new(0.4, 0, 0, 35)
-GetBtn.Position = UDim2.new(0.075, 0, 0.55, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+GetBtn.Text = "OBTENER KEY"; GetBtn.Size = UDim2.new(0.4, 0, 0, 35)
+GetBtn.Position = UDim2.new(0.075, 0, 0.55, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 GetBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", GetBtn)
 
 local VerifyBtn = Instance.new("TextButton", Main)
 VerifyBtn.Text = "VERIFICAR"; VerifyBtn.Size = UDim2.new(0.4, 0, 0, 35)
-VerifyBtn.Position = UDim2.new(0.525, 0, 0.55, 0); VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 80)
+VerifyBtn.Position = UDim2.new(0.525, 0, 0.55, 0); VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 100)
 VerifyBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", VerifyBtn)
 
--- Lógica de Arrastre Suave (Scripting)
-local UserInputService = game:GetService("UserInputService")
-local dragging, dragInput, dragStart, startPos
-local function update(input)
-    local delta = input.Position - dragStart
-    Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
-Main.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true; dragStart = input.Position; startPos = Main.Position
-        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
-    end
-end)
-Main.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
-end)
-UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging then update(input) end end)
-
--- Botones
+-- Lógica de Botones
 GetBtn.MouseButton1Click:Connect(function()
-    local url = "https://api.platoboost.net/public/start"
-    local res = fRequest({Url = url, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode({service = service, identifier = tostring(LP.UserId)})})
+    local res = fRequest({
+        Url = "https://api.platoboost.net/public/start",
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = HttpService:JSONEncode({service = service, identifier = tostring(LP.UserId)})
+    })
     if res.StatusCode == 200 then
         setclipboard(HttpService:JSONDecode(res.Body).data.url)
     end
@@ -105,8 +93,8 @@ end)
 
 VerifyBtn.MouseButton1Click:Connect(function()
     if verify(Input.Text) then
-        writefile(FILE_NAME, Input.Text)
+        writefile(FILE_PATH, Input.Text) -- Aquí es donde se guarda en la carpeta interna
         ScreenGui:Destroy()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray1"))()
+        loadstring(game:HttpGet(SCRIPT_URL))()
     end
 end)
