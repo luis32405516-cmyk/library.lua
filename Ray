@@ -1,16 +1,8 @@
--- [[ LUIS UNV - ELITE LIBRARY + VOCES PERSONALIZADAS ]]
+-- [[ LUIS UNV - ELITE LIBRARY + AVATAR FIX (SILENT EDITION) ]]
 
 local Library = {}
 
--- Función para reproducir tus voces
-local function PlayVoice(id)
-    local s = Instance.new("Sound", game:GetService("SoundService"))
-    s.SoundId = "rbxassetid://"..tostring(id)
-    s.Volume = 1
-    s:Play()
-    s.Ended:Connect(function() s:Destroy() end)
-end
-
+-- Función interna para notificaciones visuales (sin sonido)
 function Library:Notify(title, text)
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = title,
@@ -104,7 +96,9 @@ function Library:CreateWindow()
 
         function Elements:CreateButton(text, callback)
             local b = Instance.new("TextButton", TabPage); b.Size = UDim2.new(0.95, 0, 0, 30); b.BackgroundColor3 = Color3.fromRGB(35, 35, 35); b.Text = text; b.TextColor3 = Color3.new(1, 1, 1); b.Font = Enum.Font.GothamBold; b.TextSize = 10; Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
-            b.MouseButton1Click:Connect(callback)
+            b.MouseButton1Click:Connect(function()
+                pcall(callback)
+            end)
         end
 
         function Elements:CreateSwitch(text, callback)
@@ -115,14 +109,6 @@ function Library:CreateWindow()
             local state = false
             Toggle.MouseButton1Click:Connect(function()
                 state = not state
-                
-                -- Ejecución de tus voces personalizadas
-                if state then
-                    PlayVoice(87882372216017) -- Voz: Opción Activada
-                else
-                    PlayVoice(104246794919702) -- Voz: Opción Desactivada
-                end
-
                 Library:Notify(text, state and "Activado ✅" or "Desactivado ❌")
                 Circle:TweenPosition(state and UDim2.new(1,-18,0.5,-8) or UDim2.new(0,2,0.5,-8), "Out", "Quart", 0.2, true)
                 Toggle.BackgroundColor3 = state and Color3.fromRGB(0, 180, 100) or Color3.fromRGB(45, 45, 45); pcall(callback, state)
