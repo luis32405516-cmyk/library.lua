@@ -1,4 +1,4 @@
--- [[ LUIS UNV - ELITE LOADER FINAL ]]
+-- [[ LUIS UNV - ELITE LOADER (AUTO-SAVE ACCESS) ]]
 
 local LP = game:GetService("Players").LocalPlayer
 local HttpService = game:GetService("HttpService")
@@ -7,21 +7,12 @@ local HttpService = game:GetService("HttpService")
 local API_KEY = "cf6bf3061d4cc50e7b682c55be869cd436731a0252b9e3ddedd40efae5f2b83e"
 local MI_LINK = "https://lootdest.org/s?VPjgnUFI" 
 local SCRIPT_REAL = "https://raw.githubusercontent.com/luis32405516-cmyk/library.lua/refs/heads/main/Ray1"
-local MY_ID = 123456789 -- **PON TU ID AQUÍ PARA TENER ACCESO LIBRE**
 
--- 1. IDENTIFICADOR DEL EQUIPO (HWID)
-local function GetHWID()
-    local success, id = pcall(function()
-        return game:GetService("RbxAnalyticsService"):GetClientId()
+-- Función de Verificación (Pregunta a LootLabs si el ID ya tiene permiso)
+local function VerificarID()
+    local success, res = pcall(function()
+        return game:HttpGet("https://api.lootlabs.gg/v1/keys/verify?api_key="..API_KEY.."&hwid="..tostring(LP.UserId))
     end)
-    return success and id or tostring(LP.UserId * 1.5)
-end
-
--- 2. FUNCIÓN DE VERIFICACIÓN CON API DE LOOTLABS
-local function VerificarAcceso()
-    local hwid = GetHWID()
-    local url = "https://api.lootlabs.gg/v1/keys/verify?api_key="..API_KEY.."&hwid="..hwid
-    local success, res = pcall(function() return game:HttpGet(url) end)
     
     if success then
         local data = HttpService:JSONDecode(res)
@@ -30,45 +21,37 @@ local function VerificarAcceso()
     return false
 end
 
--- 3. SALTAR SI ERES EL DUEÑO
-if LP.UserId == MY_ID then
-    warn("BIENVENIDO LUIS UNV - DUEÑO DETECTADO")
-    loadstring(game:HttpGet(SCRIPT_REAL))()
-    return
-end
-
--- [[ INTERFAZ DE LOGIN ]]
+-- [[ INTERFAZ LUIS UNV ]]
 local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 320, 0, 180); Main.Position = UDim2.new(0.5, -160, 0.5, -90); Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+Main.Size = UDim2.new(0, 300, 0, 160); Main.Position = UDim2.new(0.5, -150, 0.5, -80); Main.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 15)
-local Stroke = Instance.new("UIStroke", Main); Stroke.Thickness = 3
+local Stroke = Instance.new("UIStroke", Main); Stroke.Thickness = 2
 
--- Borde Neón Animado
 task.spawn(function()
     while task.wait(0.01) do Stroke.Color = Color3.fromHSV(tick() % 5 / 5, 0.8, 1) end
 end)
 
-local Title = Instance.new("TextLabel", Main)
-Title.Text = "VERIFICAR DISPOSITIVO"; Title.Size = UDim2.new(1, 0, 0, 45); Title.BackgroundTransparency = 1; Title.TextColor3 = Color3.new(1,1,1); Title.Font = Enum.Font.LuckiestGuy; Title.TextSize = 18
+local BtnGet = Instance.new("TextButton", Main)
+BtnGet.Text = "OBTENER ACCESO"; BtnGet.Size = UDim2.new(0.8, 0, 0, 35); BtnGet.Position = UDim2.new(0.1, 0, 0.25, 0); BtnGet.BackgroundColor3 = Color3.fromRGB(30,30,30); BtnGet.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", BtnGet)
 
-local GetBtn = Instance.new("TextButton", Main)
-GetBtn.Text = "OBTENER ACCESO (ANUNCIOS)"; GetBtn.Size = UDim2.new(0.8, 0, 0, 35); GetBtn.Position = UDim2.new(0.1, 0, 0.35, 0); GetBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25); GetBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", GetBtn)
-
-GetBtn.MouseButton1Click:Connect(function()
+BtnGet.MouseButton1Click:Connect(function()
     setclipboard(MI_LINK)
-    GetBtn.Text = "¡LINK COPIADO!"; task.wait(2); GetBtn.Text = "OBTENER ACCESO"
+    BtnGet.Text = "LINK COPIADO - VE AL NAVEGADOR"
 end)
 
-local CheckBtn = Instance.new("TextButton", Main)
-CheckBtn.Text = "VERIFICAR AHORA"; CheckBtn.Size = UDim2.new(0.8, 0, 0, 35); CheckBtn.Position = UDim2.new(0.1, 0, 0.65, 0); CheckBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 180); CheckBtn.TextColor3 = Color3.new(1, 1, 1); Instance.new("UICorner", CheckBtn)
+local BtnCheck = Instance.new("TextButton", Main)
+BtnCheck.Text = "VERIFICAR ACCESO GUARDADO"; BtnCheck.Size = UDim2.new(0.8, 0, 0, 35); BtnCheck.Position = UDim2.new(0.1, 0, 0.6, 0); BtnCheck.BackgroundColor3 = Color3.fromRGB(0, 120, 200); BtnCheck.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", BtnCheck)
 
-CheckBtn.MouseButton1Click:Connect(function()
-    if VerificarAcceso() then
-        CheckBtn.Text = "DISPOSITIVO VINCULADO ✅"; task.wait(1)
+BtnCheck.MouseButton1Click:Connect(function()
+    if VerificarID() then
+        BtnCheck.Text = "ACCESO VÁLIDO ✅"
+        task.wait(1)
         ScreenGui:Destroy()
         loadstring(game:HttpGet(SCRIPT_REAL))()
     else
-        CheckBtn.Text = "NO VERIFICADO ❌"; task.wait(1.5); CheckBtn.Text = "VERIFICAR AHORA"
+        BtnCheck.Text = "ID NO ENCONTRADA ❌"
+        task.wait(2)
+        BtnCheck.Text = "VERIFICAR ACCESO GUARDADO"
     end
 end)
